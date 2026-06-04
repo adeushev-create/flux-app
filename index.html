@@ -219,7 +219,7 @@ body::after{content:'';position:fixed;bottom:-60px;left:-60px;width:250px;height
       <div class="lvl-bar"><div class="lvl-fill" id="lvl-fill" style="width:0%"></div></div>
     </div>
   </div>
-  <div class="stats-grid">
+  <div class="stats-grid" style="grid-template-columns:1fr 1fr">
     <div class="stat-card purple" onclick="goTo('s-all')">
       <div class="stat-num" id="s-total" style="color:var(--purple)">0</div>
       <div class="stat-label">идей</div>
@@ -230,11 +230,7 @@ body::after{content:'';position:fixed;bottom:-60px;left:-60px;width:250px;height
       <div class="stat-label">выполнено</div>
       <div class="stat-arrow">→</div>
     </div>
-    <div class="stat-card coral" onclick="goTo('s-links')">
-      <div class="stat-num" id="s-links-num" style="color:var(--coral)">0</div>
-      <div class="stat-label">ссылки</div>
-      <div class="stat-arrow">→</div>
-    </div>
+
   </div>
   <div class="donut-section">
     <div class="donut-wrap" onclick="goTo('s-all')">
