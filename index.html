@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>FLUX</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --purple:#7F77DD;--purple-light:#EEEDFE;--purple-dark:#3C3489;
+  --teal:#1D9E75;--teal-light:#E1F5EE;
+  --coral:#D85A30;--coral-light:#FAECE7;
+  --amber:#BA7517;--amber-light:#FAEEDA;
+  --blue:#378ADD;--blue-light:#E6F1FB;
+  --pink:#D4537E;--pink-light:#FBEAF0;
+  --bg:#ffffff;--bg2:#f5f5f0;--border:#e0dfd8;
+  --text:#1a1a1a;--text2:#888780;
+}
+@media(prefers-color-scheme:dark){
+  :root{--bg:#1c1c1e;--bg2:#2c2c2e;--border:#3a3a3c;--text:#ffffff;--text2:#8e8e93}
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;max-width:430px;margin:0 auto;overflow-x:hidden}
+.screen{display:none;min-height:100vh;padding-bottom:70px}
+.screen.active{display:block;animation:fadeUp .22s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+.header{padding:52px 16px 20px;background:var(--purple);position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,0.07)}
+.header::after{content:'';position:absolute;bottom:-60px;left:-20px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,0.05)}
+.header-top{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:1}
+.avatar-wrap{display:flex;align-items:center;gap:10px}
+.avatar{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:22px}
+.user-info{}
+.app-name{font-size:11px;letter-spacing:3px;color:rgba(255,255,255,0.6);font-weight:500}
+.user-name{font-size:17px;color:white;font-weight:600;margin-top:1px}
+.xp-pill{background:rgba(255,255,255,0.15);border-radius:20px;padding:8px 14px;text-align:center}
+.xp-num{font-size:20px;font-weight:700;color:white;line-height:1}
+.xp-label{font-size:9px;color:rgba(255,255,255,0.6);letter-spacing:1.5px;margin-top:2px}
+.streak-row{display:flex;align-items:center;gap:6px;margin-top:6px}
+.streak-pill{background:rgba(255,255,255,0.15);border-radius:20px;padding:3px 10px;font-size:12px;color:white}
+.level-section{margin-top:16px;position:relative;z-index:1}
+.level-row{display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,0.7);margin-bottom:6px}
+.level-name{font-weight:600;color:white}
+.lvl-bar{background:rgba(255,255,255,0.2);border-radius:20px;height:7px}
+.lvl-fill{background:white;border-radius:20px;height:7px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+
+.stats-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:12px}
+.stat-card{background:var(--bg2);border-radius:14px;padding:13px 8px;text-align:center;cursor:pointer;border:1px solid transparent;transition:all .15s;position:relative;overflow:hidden}
+.stat-card:active{transform:scale(0.96)}
+.stat-card.purple:hover{border-color:var(--purple)}
+.stat-card.teal:hover{border-color:var(--teal)}
+.stat-card.coral:hover{border-color:var(--coral)}
+.stat-num{font-size:24px;font-weight:700}
+.stat-label{font-size:10px;color:var(--text2);margin-top:3px;letter-spacing:0.3px}
+.stat-arrow{position:absolute;bottom:6px;right:8px;font-size:10px;color:var(--text2);opacity:0.6}
+
+.donut-section{padding:0 12px 4px;display:flex;gap:14px;align-items:center}
+.donut-wrap{position:relative;width:120px;height:120px;flex-shrink:0;cursor:pointer}
+.donut-wrap svg{width:120px;height:120px;transform:rotate(-90deg)}
+.donut-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none}
+.donut-big{font-size:26px;font-weight:700;color:var(--text);line-height:1}
+.donut-sub{font-size:10px;color:var(--text2);margin-top:2px;letter-spacing:.5px}
+.legend{flex:1}
+.leg-item{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:10px;cursor:pointer;transition:background .15s;margin-bottom:2px}
+.leg-item:hover{background:var(--bg2)}
+.leg-item:active{transform:scale(0.97)}
+.leg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.leg-name{font-size:12px;color:var(--text);flex:1}
+.leg-count{font-size:12px;font-weight:600;color:var(--text2)}
+
+.section-head{font-size:10px;font-weight:600;color:var(--text2);letter-spacing:1.5px;padding:12px 16px 6px}
+
+.week-bars{padding:0 16px 8px}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.bar-day{font-size:11px;color:var(--text2);width:22px}
+.bar-track{flex:1;background:var(--bg2);border-radius:20px;height:7px;overflow:hidden}
+.bar-fill{height:7px;border-radius:20px;background:var(--purple);transition:width .6s ease}
+.bar-cnt{font-size:11px;color:var(--text2);width:14px;text-align:right}
+
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--bg);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(4,1fr);z-index:100}
+.nav-btn{padding:10px 4px 8px;text-align:center;cursor:pointer;border:none;background:none;transition:all .15s;outline:none}
+.nav-btn svg{width:22px;height:22px;stroke:var(--text2);stroke-width:1.6;fill:none;display:block;margin:0 auto 2px}
+.nav-btn span{font-size:9px;color:var(--text2);letter-spacing:.5px;display:block}
+.nav-btn.on svg{stroke:var(--purple)}
+.nav-btn.on span{color:var(--purple)}
+
+.back-header{padding:52px 16px 16px;background:var(--purple)}
+.back-btn{background:none;border:none;color:rgba(255,255,255,0.8);font-size:13px;cursor:pointer;display:flex;align-items:center;gap:5px;padding:0;margin-bottom:10px}
+.back-title{color:white;font-size:20px;font-weight:700}
+.back-sub{color:rgba(255,255,255,0.65);font-size:13px;margin-top:3px}
+
+.idea-list{padding:10px 12px}
+.idea-card{border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:8px;cursor:pointer;transition:all .15s;display:flex;gap:10px;align-items:flex-start;background:var(--bg)}
+.idea-card:active{transform:scale(0.98)}
+.idea-card.done{opacity:0.45}
+.idea-check{font-size:20px;flex-shrink:0;margin-top:0}
+.idea-body{flex:1;min-width:0}
+.idea-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.tag{font-size:10px;padding:2px 9px;border-radius:20px;font-weight:600;letter-spacing:.3px}
+.xp-tag{font-size:10px;color:var(--text2)}
+.idea-text{font-size:13px;color:var(--text);line-height:1.45}
+.idea-sub{font-size:11px;color:var(--text2);margin-top:3px}
+
+.blocks-grid{padding:10px 12px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.block-card{border:1px solid var(--border);border-radius:14px;padding:14px;cursor:pointer;background:var(--bg);transition:all .15s}
+.block-card:active{transform:scale(0.96)}
+.block-icon{font-size:26px;margin-bottom:6px}
+.block-name{font-size:13px;font-weight:600;color:var(--text)}
+.block-count{font-size:11px;color:var(--text2);margin-top:2px}
+
+.record-section{padding:16px}
+.record-btn{width:100%;border:none;border-radius:16px;padding:16px;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .15s}
+.record-btn.idle{background:var(--purple);color:white}
+.record-btn.recording{background:#e74c3c;color:white;animation:pulse .8s infinite}
+.record-btn.processing{background:var(--bg2);color:var(--text2)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.7}}
+.text-area{width:100%;border:1px solid var(--border);border-radius:14px;padding:12px;font-size:14px;color:var(--text);background:var(--bg2);resize:none;outline:none;font-family:inherit;margin-bottom:10px;min-height:90px}
+.topic-select{width:100%;border:1px solid var(--border);border-radius:14px;padding:10px 12px;font-size:14px;color:var(--text);background:var(--bg2);outline:none;margin-bottom:10px;appearance:none;font-family:inherit}
+.save-btn{width:100%;background:var(--purple);color:white;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:600;cursor:pointer}
+.save-btn:active{transform:scale(0.97)}
+.status-msg{text-align:center;font-size:13px;color:var(--text2);padding:8px;min-height:36px}
+
+.achievement-list{padding:10px 12px;display:flex;flex-wrap:wrap;gap:8px}
+.ach{background:var(--bg2);border-radius:20px;padding:5px 12px;font-size:12px;color:var(--text)}
+.ach.locked{opacity:.4;border:1px dashed var(--border)}
+.stats-cards{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 12px}
+.stats-big-card{background:var(--bg2);border-radius:14px;padding:14px}
+.sbc-label{font-size:11px;color:var(--text2);margin-bottom:5px}
+.sbc-val{font-size:26px;font-weight:700}
+.level-card{margin:10px 12px;background:var(--purple-light);border-radius:14px;padding:16px;display:flex;align-items:center;gap:14px}
+.level-circle{width:60px;height:60px;border-radius:50%;border:3px solid var(--purple);display:flex;align-items:center;justify-content:center;flex-direction:column;flex-shrink:0}
+.level-num{font-size:20px;font-weight:700;color:var(--purple)}
+.level-lbl{font-size:9px;color:var(--purple);letter-spacing:.5px}
+.level-info{flex:1}
+.level-title{font-size:14px;font-weight:600;color:var(--purple-dark)}
+.level-progress-bar{background:rgba(127,119,221,.2);border-radius:20px;height:7px;margin-top:6px}
+.level-progress-fill{background:var(--purple);border-radius:20px;height:7px;transition:width .6s ease}
+.level-progress-text{font-size:11px;color:var(--purple);margin-top:4px}
+</style>
+</head>
+<body>
+
+<div id="s-home" class="screen active">
+  <div class="header">
+    <div class="header-top">
+      <div class="avatar-wrap">
+        <div class="avatar" id="user-avatar">🦊</div>
+        <div class="user-info">
+          <div class="app-name">FLUX</div>
+          <div class="user-name" id="user-name">Загрузка...</div>
+        </div>
+      </div>
+      <div>
+        <div class="xp-pill">
+          <div class="xp-num" id="xp-num">0</div>
+          <div class="xp-label">XP</div>
+        </div>
+        <div class="streak-row"><div class="streak-pill" id="streak-pill">🔥 0 дней</div></div>
+      </div>
+    </div>
+    <div class="level-section">
+      <div class="level-row">
+        <span class="level-name" id="level-name">Уровень 1</span>
+        <span id="level-xp-text">0 / 100</span>
+      </div>
+      <div class="lvl-bar"><div class="lvl-fill" id="lvl-fill" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card purple" onclick="goTo('s-all')">
+      <div class="stat-num" id="s-total" style="color:var(--purple)">0</div>
+      <div class="stat-label">идей</div>
+      <div class="stat-arrow">→</div>
+    </div>
+    <div class="stat-card teal" onclick="goTo('s-done')">
+      <div class="stat-num" id="s-done-num" style="color:var(--teal)">0</div>
+      <div class="stat-label">выполнено</div>
+      <div class="stat-arrow">→</div>
+    </div>
+    <div class="stat-card coral" onclick="goTo('s-links')">
+      <div class="stat-num" id="s-links-num" style="color:var(--coral)">0</div>
+      <div class="stat-label">ссылки</div>
+      <div class="stat-arrow">→</div>
+    </div>
+  </div>
+
+  <div class="donut-section">
+    <div class="donut-wrap" onclick="goTo('s-all')">
+      <svg viewBox="0 0 120 120" id="donut-svg">
+        <circle cx="60" cy="60" r="46" fill="none" stroke="var(--bg2)" stroke-width="13"/>
+      </svg>
+      <div class="donut-center">
+        <div class="donut-big" id="donut-num">0</div>
+        <div class="donut-sub">идей</div>
+      </div>
+    </div>
+    <div class="legend" id="donut-legend"></div>
+  </div>
+
+  <div class="section-head">АКТИВНОСТЬ НЕДЕЛИ</div>
+  <div class="week-bars" id="week-bars"></div>
+</div>
+
+<div id="s-all" class="screen">
+  <div class="back-header">
+    <button class="back-btn" onclick="goTo('s-home')">← назад</button>
+    <div class="back-title">Все идеи</div>
+    <div class="back-sub" id="all-sub">загрузка...</div>
+  </div>
+  <div class="idea-list" id="all-list"></div>
+</div>
+
+<div id="s-done" class="screen">
+  <div class="back-header">
+    <button class="back-btn" onclick="goTo('s-home')">← назад</button>
+    <div class="back-title">Выполнено ✅</div>
+    <div class="back-sub" id="done-sub"></div>
+  </div>
+  <div class="idea-list" id="done-list"></div>
+</div>
+
+<div id="s-links" class="screen">
+  <div class="back-header">
+    <button class="back-btn" onclick="goTo('s-home')">← назад</button>
+    <div class="back-title">Ссылки 🔗</div>
+    <div class="back-sub" id="links-sub"></div>
+  </div>
+  <div class="idea-list" id="links-list"></div>
+</div>
+
+<div id="s-blocks" class="screen">
+  <div class="header" style="padding-top:52px">
+    <div style="color:rgba(255,255,255,.6);font-size:10px;letter-spacing:2px">FLUX</div>
+    <div style="color:white;font-size:20px;font-weight:700;margin-top:4px">По блокам</div>
+  </div>
+  <div class="blocks-grid" id="blocks-grid"></div>
+</div>
+
+<div id="s-block-detail" class="screen">
+  <div class="back-header">
+    <button class="back-btn" onclick="goTo('s-blocks')">← назад</button>
+    <div class="back-title" id="block-detail-title"></div>
+    <div class="back-sub" id="block-detail-sub"></div>
+  </div>
+  <div class="idea-list" id="block-detail-list"></div>
+</div>
+
+<div id="s-add" class="screen">
+  <div class="header" style="padding-top:52px">
+    <div style="color:rgba(255,255,255,.6);font-size:10px;letter-spacing:2px">FLUX</div>
+    <div style="color:white;font-size:20px;font-weight:700;margin-top:4px">Новая идея</div>
+  </div>
+  <div class="record-section">
+    <button class="record-btn idle" id="rec-btn" onclick="toggleRecord()">
+      <span id="rec-icon">🎤</span>
+      <span id="rec-text">Надиктовать голосом</span>
+    </button>
+    <div class="status-msg" id="rec-status"></div>
+    <textarea class="text-area" id="idea-text" placeholder="Или напиши идею..."></textarea>
+    <select class="topic-select" id="topic-select">
+      <option value="Идея">💡 Идея</option>
+      <option value="Проект">🚀 Проект</option>
+      <option value="Работа">💼 Работа</option>
+      <option value="Обучение">📚 Обучение</option>
+      <option value="Книга">📖 Книга</option>
+      <option value="Видео">🎬 Видео</option>
+      <option value="Здоровье">💪 Здоровье</option>
+      <option value="Личное">🌱 Личное</option>
+      <option value="Финансы">💰 Финансы</option>
+      <option value="Разное">📌 Разное</option>
+    </select>
+    <button class="save-btn" onclick="saveIdea()">⚡ Сохранить</button>
+  </div>
+</div>
+
+<div id="s-stats" class="screen">
+  <div class="header" style="padding-top:52px">
+    <div style="color:rgba(255,255,255,.6);font-size:10px;letter-spacing:2px">FLUX</div>
+    <div style="color:white;font-size:20px;font-weight:700;margin-top:4px">Прогресс</div>
+  </div>
+  <div class="level-card">
+    <div class="level-circle">
+      <div class="level-num" id="st-level">1</div>
+      <div class="level-lbl">уровень</div>
+    </div>
+    <div class="level-info">
+      <div class="level-title" id="st-level-name">Новичок</div>
+      <div class="level-progress-bar"><div class="level-progress-fill" id="st-lvl-fill" style="width:0%"></div></div>
+      <div class="level-progress-text" id="st-lvl-text">0 / 100 XP</div>
+    </div>
+  </div>
+  <div class="stats-cards">
+    <div class="stats-big-card"><div class="sbc-label">Всего XP</div><div class="sbc-val" id="st-xp" style="color:var(--purple)">0</div></div>
+    <div class="stats-big-card"><div class="sbc-label">Серия</div><div class="sbc-val" id="st-streak" style="color:var(--coral)">🔥 0</div></div>
+    <div class="stats-big-card"><div class="sbc-label">Выполнено</div><div class="sbc-val" id="st-done" style="color:var(--teal)">0</div></div>
+    <div class="stats-big-card"><div class="sbc-label">Продукт.</div><div class="sbc-val" id="st-prod" style="color:var(--amber)">0%</div></div>
+  </div>
+  <div class="section-head">ДОСТИЖЕНИЯ</div>
+  <div class="achievement-list" id="ach-list"></div>
+</div>
+
+<nav class="bottom-nav">
+  <button class="nav-btn on" onclick="goTo('s-home')" id="nav-home">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>главная</span>
+  </button>
+  <button class="nav-btn" onclick="goTo('s-blocks')" id="nav-blocks">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    <span>блоки</span>
+  </button>
+  <button class="nav-btn" onclick="goTo('s-add')" id="nav-add">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    <span>добавить</span>
+  </button>
+  <button class="nav-btn" onclick="goTo('s-stats')" id="nav-stats">
+    <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    <span>прогресс</span>
+  </button>
+</nav>
+
+<script>
+const tg = window.Telegram?.WebApp;
+if(tg){tg.ready();tg.expand();}
+
+const AVATARS = ["🦊","🐺","🦁","🐯","🦅","🐉","🦋","🦩","🐬","🦄","🐸","🦀"];
+const LEVELS = ["Новичок","Искатель","Строитель","Архитектор","Мастер","Легенда"];
+const TOPIC_COLORS = {
+  "Проект":["#EEEDFE","#534AB7","#7F77DD"],
+  "Обучение":["#E1F5EE","#0F6E56","#1D9E75"],
+  "Книга":["#E1F5EE","#0F6E56","#1D9E75"],
+  "Идея":["#FAECE7","#993C1D","#D85A30"],
+  "Работа":["#FAEEDA","#854F0B","#BA7517"],
+  "Видео":["#FBEAF0","#72243E","#D4537E"],
+  "Здоровье":["#E6F1FB","#0C447C","#378ADD"],
+  "Личное":["#EAF3DE","#27500A","#639922"],
+  "Финансы":["#FAEEDA","#854F0B","#BA7517"],
+  "Разное":["#F1EFE8","#444441","#888780"],
+};
+const TOPIC_EMOJI = {
+  "Проект":"🚀","Обучение":"📚","Книга":"📖","Идея":"💡",
+  "Работа":"💼","Видео":"🎬","Здоровье":"💪","Личное":"🌱",
+  "Финансы":"💰","Разное":"📌","Ссылка":"🔗"
+};
+
+let userId = tg?.initDataUnsafe?.user?.id || 12345;
+let userName = tg?.initDataUnsafe?.user?.first_name || "Пользователь";
+let allIdeas = [];
+let userStats = {};
+const API = window.location.origin.includes('github') 
+  ? 'https://YOUR_RAILWAY_URL' 
+  : window.location.origin;
+
+async function loadData(){
+  try{
+    const r = await fetch(`${API}/api/ideas?user_id=${userId}`);
+    const d = await r.json();
+    allIdeas = d.ideas || [];
+    userStats = d.stats || {};
+    renderHome();
+  }catch(e){
+    allIdeas = [];
+    userStats = {xp:0,total_ideas:0,done_count:0,links_count:0};
+    renderHome();
+  }
+}
+
+function renderHome(){
+  const avatar = AVATARS[userId % AVATARS.length];
+  document.getElementById('user-avatar').textContent = avatar;
+  document.getElementById('user-name').textContent = userName;
+  const xp = userStats.xp || 0;
+  const level = Math.floor(xp/100)+1;
+  const xpInLevel = xp%100;
+  document.getElementById('xp-num').textContent = xp;
+  document.getElementById('level-name').textContent = `Ур. ${level} · ${LEVELS[Math.min(level-1,LEVELS.length-1)]}`;
+  document.getElementById('level-xp-text').textContent = `${xpInLevel}/100`;
+  setTimeout(()=>{document.getElementById('lvl-fill').style.width=xpInLevel+'%'},100);
+  const streak = Math.min(userStats.streak||5,99);
+  document.getElementById('streak-pill').textContent = `🔥 ${streak} дн.`;
+  const total = allIdeas.length;
+  const done = allIdeas.filter(i=>i.done).length;
+  const links = allIdeas.filter(i=>i.url).length;
+  document.getElementById('s-total').textContent = total;
+  document.getElementById('s-done-num').textContent = done;
+  document.getElementById('s-links-num').textContent = links;
+  document.getElementById('donut-num').textContent = total;
+  renderDonut();
+  renderWeekBars();
+}
+
+function renderDonut(){
+  const counts = {};
+  allIdeas.forEach(i=>{const t=i.topic||'Разное';counts[t]=(counts[t]||0)+1;});
+  const total = allIdeas.length||1;
+  const R=46, C=2*Math.PI*R;
+  let svg = `<circle cx="60" cy="60" r="${R}" fill="none" stroke="var(--bg2)" stroke-width="13"/>`;
+  let offset=0, legend='';
+  const entries = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  entries.forEach(([topic,cnt])=>{
+    const col=(TOPIC_COLORS[topic]||TOPIC_COLORS["Разное"])[2];
+    const len=(cnt/total)*C;
+    svg+=`<circle cx="60" cy="60" r="${R}" fill="none" stroke="${col}" stroke-width="13" stroke-dasharray="${len} ${C}" stroke-dashoffset="${-offset}" stroke-linecap="round"/>`;
+    offset+=len;
+    const emoji=TOPIC_EMOJI[topic]||'📌';
+    legend+=`<div class="leg-item" onclick="showBlock('${topic}')">
+      <div class="leg-dot" style="background:${col}"></div>
+      <div class="leg-name">${emoji} ${topic}</div>
+      <div class="leg-count">${cnt}</div>
+    </div>`;
+  });
+  document.getElementById('donut-svg').innerHTML=svg;
+  document.getElementById('donut-legend').innerHTML=legend||'<div style="color:var(--text2);font-size:13px;padding:8px">Пока нет идей</div>';
+}
+
+function renderWeekBars(){
+  const days=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+  const counts=[0,0,0,0,0,0,0];
+  const now=new Date();
+  allIdeas.forEach(i=>{
+    const d=new Date(i.created_at);
+    const diff=Math.floor((now-d)/86400000);
+    if(diff<7){const day=(d.getDay()+6)%7;counts[day]++;}
+  });
+  const max=Math.max(...counts,1);
+  let html='';
+  days.forEach((d,i)=>{
+    const pct=Math.round((counts[i]/max)*100);
+    html+=`<div class="bar-row">
+      <div class="bar-day">${d}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+      <div class="bar-cnt">${counts[i]}</div>
+    </div>`;
+  });
+  document.getElementById('week-bars').innerHTML=html;
+}
+
+function renderIdeaCard(idea, showDone=true){
+  const t=idea.topic||'Разное';
+  const colors=TOPIC_COLORS[t]||TOPIC_COLORS["Разное"];
+  const emoji=TOPIC_EMOJI[t]||'📌';
+  const check=idea.done?'✅':'⬜';
+  const doneClass=idea.done?'done':'';
+  const strikeClass=idea.done?'style="text-decoration:line-through"':'';
+  const hours=idea.estimated_hours?`<span>⏱ ~${idea.estimated_hours}ч</span>`:'';
+  const link=idea.url?`<div class="idea-sub">🔗 ${idea.url.substring(0,40)}...</div>`:'';
+  return `<div class="idea-card ${doneClass}" onclick="toggleDone(${idea.id})">
+    <div class="idea-check">${check}</div>
+    <div class="idea-body">
+      <div class="idea-meta">
+        <span class="tag" style="background:${colors[0]};color:${colors[1]}">${emoji} ${t}</span>
+        <span class="xp-tag">+${idea.xp_reward||10} XP ${hours?'· ':''} ${hours}</span>
+      </div>
+      <div class="idea-text" ${strikeClass}>${idea.content}</div>
+      ${link}
+    </div>
+  </div>`;
+}
+
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
+  const navMap={
+    's-home':'nav-home','s-all':'nav-home','s-done':'nav-home','s-links':'nav-home',
+    's-blocks':'nav-blocks','s-block-detail':'nav-blocks',
+    's-add':'nav-add','s-stats':'nav-stats'
+  };
+  if(navMap[id]) document.getElementById(navMap[id]).classList.add('on');
+  if(id==='s-all') renderAll();
+  if(id==='s-done') renderDone();
+  if(id==='s-links') renderLinks();
+  if(id==='s-blocks') renderBlocks();
+  if(id==='s-stats') renderStats();
+  window.scrollTo(0,0);
+}
+
+function renderAll(){
+  document.getElementById('all-sub').textContent=`${allIdeas.length} записей за неделю`;
+  document.getElementById('all-list').innerHTML=allIdeas.length
+    ? allIdeas.map(i=>renderIdeaCard(i)).join('')
+    : '<div style="text-align:center;color:var(--text2);padding:30px">Пока нет идей 💡</div>';
+}
+
+function renderDone(){
+  const done=allIdeas.filter(i=>i.done);
+  const xpTotal=done.reduce((s,i)=>s+(i.xp_reward||10),0);
+  document.getElementById('done-sub').textContent=`${done.length} задач · +${xpTotal} XP`;
+  document.getElementById('done-list').innerHTML=done.length
+    ? done.map(i=>renderIdeaCard(i)).join('')
+    : '<div style="text-align:center;color:var(--text2);padding:30px">Нет выполненных</div>';
+}
+
+function renderLinks(){
+  const links=allIdeas.filter(i=>i.url);
+  document.getElementById('links-sub').textContent=`${links.length} сохранено`;
+  document.getElementById('links-list').innerHTML=links.length
+    ? links.map(i=>renderIdeaCard(i)).join('')
+    : '<div style="text-align:center;color:var(--text2);padding:30px">Нет ссылок</div>';
+}
+
+function renderBlocks(){
+  const BLOCKS = [
+    {key:'Проект',emoji:'🚀',color:'var(--purple-light)'},
+    {key:'Обучение',emoji:'📚',color:'var(--teal-light)'},
+    {key:'Книга',emoji:'📖',color:'#E1F5EE'},
+    {key:'Видео',emoji:'🎬',color:'var(--pink-light)'},
+    {key:'Работа',emoji:'💼',color:'var(--amber-light)'},
+    {key:'Идея',emoji:'💡',color:'var(--coral-light)'},
+    {key:'Здоровье',emoji:'💪',color:'var(--blue-light)'},
+    {key:'Личное',emoji:'🌱',color:'#EAF3DE'},
+  ];
+  const counts={};
+  allIdeas.forEach(i=>{const t=i.topic||'Разное';counts[t]=(counts[t]||0)+1;});
+  document.getElementById('blocks-grid').innerHTML=BLOCKS.map(b=>`
+    <div class="block-card" style="background:${b.color}" onclick="showBlock('${b.key}')">
+      <div class="block-icon">${b.emoji}</div>
+      <div class="block-name">${b.key}</div>
+      <div class="block-count">${counts[b.key]||0} идей</div>
+    </div>`).join('');
+}
+
+function showBlock(topic){
+  const ideas=allIdeas.filter(i=>i.topic===topic);
+  const emoji=TOPIC_EMOJI[topic]||'📌';
+  document.getElementById('block-detail-title').textContent=`${emoji} ${topic}`;
+  document.getElementById('block-detail-sub').textContent=`${ideas.length} идей`;
+  document.getElementById('block-detail-list').innerHTML=ideas.length
+    ? ideas.map(i=>renderIdeaCard(i)).join('')
+    : '<div style="text-align:center;color:var(--text2);padding:30px">Нет идей в этом блоке</div>';
+  goTo('s-block-detail');
+}
+
+function renderStats(){
+  const xp=userStats.xp||0;
+  const level=Math.floor(xp/100)+1;
+  const xpInLevel=xp%100;
+  const levelName=LEVELS[Math.min(level-1,LEVELS.length-1)];
+  document.getElementById('st-level').textContent=level;
+  document.getElementById('st-level-name').textContent=levelName;
+  document.getElementById('st-xp').textContent=xp;
+  document.getElementById('st-streak').textContent=`🔥 ${userStats.streak||5}`;
+  document.getElementById('st-done').textContent=userStats.done_count||0;
+  const total=userStats.total_ideas||1;
+  const done=userStats.done_count||0;
+  document.getElementById('st-prod').textContent=Math.round(done/total*100)+'%';
+  setTimeout(()=>{
+    document.getElementById('st-lvl-fill').style.width=xpInLevel+'%';
+    document.getElementById('st-lvl-text').textContent=`${xpInLevel} / 100 XP`;
+  },100);
+  const achs=[
+    {icon:'🎯',name:'Первая идея',done:total>=1},
+    {icon:'🔥',name:'5 дней подряд',done:(userStats.streak||0)>=5},
+    {icon:'📚',name:'Ученик',done:allIdeas.filter(i=>i.topic==='Обучение').length>=1},
+    {icon:'🚀',name:'Проектёр',done:allIdeas.filter(i=>i.topic==='Проект').length>=3},
+    {icon:'✅',name:'Исполнитель',done:done>=5},
+    {icon:'⚡',name:'Сотка XP',done:xp>=100},
+    {icon:'🏆',name:'Легенда',done:level>=5},
+    {icon:'💡',name:'Генератор',done:total>=20},
+  ];
+  document.getElementById('ach-list').innerHTML=achs.map(a=>`
+    <div class="ach ${a.done?'':'locked'}">${a.icon} ${a.name}</div>`).join('');
+}
+
+async function toggleDone(ideaId){
+  const idea=allIdeas.find(i=>i.id===ideaId);
+  if(!idea||idea.done)return;
+  try{
+    const r=await fetch(`${API}/api/done`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({idea_id:ideaId,user_id:userId})
+    });
+    const d=await r.json();
+    if(d.ok){
+      idea.done=1;
+      userStats.xp=(d.total_xp||0);
+      userStats.done_count=(userStats.done_count||0)+1;
+      loadData();
+      if(tg) tg.HapticFeedback?.impactOccurred('medium');
+    }
+  }catch(e){console.log(e)}
+}
+
+let mediaRecorder=null, audioChunks=[];
+async function toggleRecord(){
+  const btn=document.getElementById('rec-btn');
+  const status=document.getElementById('rec-status');
+  if(mediaRecorder?.state==='recording'){
+    mediaRecorder.stop();
+    btn.className='record-btn processing';
+    document.getElementById('rec-icon').textContent='⏳';
+    document.getElementById('rec-text').textContent='Обрабатываю...';
+    return;
+  }
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    audioChunks=[];
+    mediaRecorder=new MediaRecorder(stream);
+    mediaRecorder.ondataavailable=e=>audioChunks.push(e.data);
+    mediaRecorder.onstop=async()=>{
+      stream.getTracks().forEach(t=>t.stop());
+      const blob=new Blob(audioChunks,{type:'audio/webm'});
+      const form=new FormData();
+      form.append('file',blob,'voice.webm');
+      form.append('user_id',userId);
+      status.textContent='Отправляю...';
+      try{
+        const r=await fetch(`${API}/api/voice`,{method:'POST',body:form});
+        const d=await r.json();
+        if(d.text) document.getElementById('idea-text').value=d.text;
+        status.textContent='✅ Расшифровано!';
+      }catch(e){status.textContent='⚠️ Запишите текст вручную';}
+      btn.className='record-btn idle';
+      document.getElementById('rec-icon').textContent='🎤';
+      document.getElementById('rec-text').textContent='Надиктовать голосом';
+    };
+    mediaRecorder.start();
+    btn.className='record-btn recording';
+    document.getElementById('rec-icon').textContent='⏹';
+    document.getElementById('rec-text').textContent='Остановить запись';
+    status.textContent='🔴 Запись...';
+  }catch(e){status.textContent='⚠️ Нет доступа к микрофону';}
+}
+
+async function saveIdea(){
+  const text=document.getElementById('idea-text').value.trim();
+  const topic=document.getElementById('topic-select').value;
+  if(!text){document.getElementById('rec-status').textContent='⚠️ Напишите идею';return;}
+  try{
+    const r=await fetch(`${API}/api/ideas`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({user_id:userId,content:text,topic:topic,xp_reward:10})
+    });
+    const d=await r.json();
+    if(d.ok){
+      document.getElementById('idea-text').value='';
+      document.getElementById('rec-status').textContent='✅ Сохранено!';
+      await loadData();
+      setTimeout(()=>goTo('s-home'),800);
+      if(tg) tg.HapticFeedback?.notificationOccurred('success');
+    }
+  }catch(e){
+    document.getElementById('rec-status').textContent='⚠️ Нет связи с сервером';
+  }
+}
+
+loadData();
+</script>
+</body>
+</html>
