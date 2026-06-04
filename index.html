@@ -173,6 +173,17 @@ body::after{content:'';position:fixed;bottom:-60px;left:-60px;width:250px;height
 /* TOAST */
 .toast{position:fixed;top:60px;left:50%;transform:translateX(-50%) translateY(-10px);background:var(--text);color:var(--bg);padding:10px 20px;border-radius:20px;font-size:13px;font-weight:600;z-index:999;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+.edit-field-label{font-size:11px;font-weight:700;color:var(--text2);letter-spacing:1px;margin-bottom:6px;margin-top:14px}
+.delete-btn{width:100%;background:var(--coral-light);color:var(--coral);border:1.5px solid rgba(216,90,48,0.2);border-radius:14px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px}
+.delete-btn:active{transform:scale(0.97)}
+.confirm-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+.confirm-sheet{background:var(--card);border-radius:20px 20px 0 0;padding:24px 20px 36px;width:100%;max-width:430px}
+.confirm-title{font-size:17px;font-weight:700;color:var(--text);margin-bottom:6px;text-align:center}
+.confirm-sub{font-size:13px;color:var(--text2);text-align:center;margin-bottom:20px}
+.confirm-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.confirm-cancel{background:var(--bg2);color:var(--text);border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:700;cursor:pointer}
+.confirm-delete{background:var(--coral);color:white;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:700;cursor:pointer}
 </style>
 </head>
 <body>
@@ -401,6 +412,51 @@ body::after{content:'';position:fixed;bottom:-60px;left:-60px;width:250px;height
   </div>
 </div>
 
+
+<!-- EDIT IDEA -->
+<div id="s-edit" class="screen">
+  <div class="back-header">
+    <button class="back-btn" onclick="cancelEdit()">← назад</button>
+    <div class="back-title">Редактировать</div>
+  </div>
+  <div style="padding:12px">
+    <div class="edit-field-label">ТЕКСТ ИДЕИ</div>
+    <textarea class="text-area" id="edit-content" style="min-height:100px"></textarea>
+    <div class="edit-field-label">ТЕМА</div>
+    <select class="topic-select" id="edit-topic">
+      <option value="Идея">💡 Идея</option>
+      <option value="Проект">🚀 Проект</option>
+      <option value="Работа">💼 Работа</option>
+      <option value="Обучение">📚 Обучение</option>
+      <option value="Книга">📖 Книга</option>
+      <option value="Видео">🎬 Видео</option>
+      <option value="Здоровье">💪 Здоровье</option>
+      <option value="Личное">🌱 Личное</option>
+      <option value="Финансы">💰 Финансы</option>
+      <option value="Разное">📌 Разное</option>
+    </select>
+    <div class="edit-field-label">ССЫЛКА (необязательно)</div>
+    <input type="url" id="edit-url" placeholder="https://..." style="width:100%;border:1.5px solid var(--border);border-radius:14px;padding:11px 12px;font-size:14px;color:var(--text);background:var(--card);outline:none;font-family:inherit;margin-bottom:4px">
+    <div class="edit-field-label">ОЦЕНКА ВРЕМЕНИ (часов)</div>
+    <input type="number" id="edit-hours" placeholder="например 2" min="0" max="100" step="0.5" style="width:100%;border:1.5px solid var(--border);border-radius:14px;padding:11px 12px;font-size:14px;color:var(--text);background:var(--card);outline:none;font-family:inherit;margin-bottom:4px">
+    <div style="height:14px"></div>
+    <button class="save-btn" onclick="saveEdit()">💾 Сохранить изменения</button>
+    <button class="delete-btn" onclick="showDeleteConfirm()">🗑 Удалить идею</button>
+  </div>
+</div>
+
+<!-- DELETE CONFIRM -->
+<div id="delete-confirm" style="display:none" class="confirm-overlay" onclick="hideDeleteConfirm()">
+  <div class="confirm-sheet" onclick="event.stopPropagation()">
+    <div class="confirm-title">Удалить идею?</div>
+    <div class="confirm-sub">Это действие нельзя отменить</div>
+    <div class="confirm-btns">
+      <button class="confirm-cancel" onclick="hideDeleteConfirm()">Отмена</button>
+      <button class="confirm-delete" onclick="confirmDelete()">Удалить</button>
+    </div>
+  </div>
+</div>
+
 <!-- NAV -->
 <nav class="bottom-nav">
   <button class="nav-btn on" onclick="goTo('s-home')" id="nav-home">
@@ -563,7 +619,10 @@ function renderIdeaCard(idea){
         ${link}
       </div>
     </div>
-    <div class="idea-actions">${actionBtn}</div>
+    <div class="idea-actions">
+      ${actionBtn}
+      <button class="action-btn" style="background:var(--purple-light);color:var(--purple);flex:0.5" onclick="openEdit(event,${idea.id})">✏️</button>
+    </div>
   </div>`;
 }
 
@@ -864,6 +923,78 @@ async function renderLeaderboard(){
       </div>`;
     }).join('');
   }catch(e){el.innerHTML='<div style="text-align:center;color:var(--text2);padding:30px">⚠️ Нет связи</div>';}
+}
+
+
+let currentEditId = null;
+let editFromScreen = 's-all';
+
+function openEdit(e, ideaId) {
+  e.stopPropagation();
+  const idea = allIdeas.find(i => i.id === ideaId);
+  if (!idea) return;
+  currentEditId = ideaId;
+  // Remember which screen we came from
+  const active = document.querySelector('.screen.active');
+  editFromScreen = active ? active.id : 's-all';
+  document.getElementById('edit-content').value = idea.content || '';
+  document.getElementById('edit-topic').value = idea.topic || 'Идея';
+  document.getElementById('edit-url').value = idea.url || '';
+  document.getElementById('edit-hours').value = idea.estimated_hours || '';
+  goTo('s-edit');
+}
+
+function cancelEdit() {
+  goTo(editFromScreen);
+}
+
+async function saveEdit() {
+  const content = document.getElementById('edit-content').value.trim();
+  const topic = document.getElementById('edit-topic').value;
+  const url = document.getElementById('edit-url').value.trim() || null;
+  const hours = parseFloat(document.getElementById('edit-hours').value) || null;
+  if (!content) { showToast('⚠️ Текст не может быть пустым'); return; }
+  try {
+    const r = await fetch(`${API}/api/ideas/update`, {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({idea_id: currentEditId, user_id: userId, content, topic, url, estimated_hours: hours})
+    });
+    const d = await r.json();
+    if (d.ok) {
+      const idea = allIdeas.find(i => i.id === currentEditId);
+      if (idea) { idea.content = content; idea.topic = topic; idea.url = url; idea.estimated_hours = hours; }
+      showToast('✅ Сохранено!');
+      if (tg) tg.HapticFeedback?.notificationOccurred('success');
+      await loadData();
+      goTo(editFromScreen);
+    }
+  } catch(e) { showToast('⚠️ Нет связи'); }
+}
+
+function showDeleteConfirm() {
+  document.getElementById('delete-confirm').style.display = 'flex';
+}
+
+function hideDeleteConfirm() {
+  document.getElementById('delete-confirm').style.display = 'none';
+}
+
+async function confirmDelete() {
+  hideDeleteConfirm();
+  try {
+    const r = await fetch(`${API}/api/ideas/delete`, {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({idea_id: currentEditId, user_id: userId})
+    });
+    const d = await r.json();
+    if (d.ok) {
+      allIdeas = allIdeas.filter(i => i.id !== currentEditId);
+      showToast('🗑 Идея удалена');
+      if (tg) tg.HapticFeedback?.impactOccurred('heavy');
+      renderHome();
+      goTo(editFromScreen);
+    }
+  } catch(e) { showToast('⚠️ Нет связи'); }
 }
 
 loadData();
