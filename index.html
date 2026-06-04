@@ -92,15 +92,15 @@ body::after{content:'';position:fixed;bottom:-60px;left:-60px;width:250px;height
 
 /* BOTTOM NAV */
 .bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--card);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(5,1fr);z-index:100;backdrop-filter:blur(10px);padding-bottom:env(safe-area-inset-bottom)}
-.nav-btn{padding:10px 4px 8px;text-align:center;cursor:pointer;border:none;background:none;transition:all .2s;outline:none;position:relative}
-.nav-btn svg{width:22px;height:22px;stroke:var(--text2);stroke-width:1.7;fill:none;display:block;margin:0 auto 3px;transition:all .2s}
-.nav-btn span{font-size:9px;color:var(--text2);letter-spacing:.5px;display:block;font-weight:500;transition:all .2s}
+.nav-btn{padding:6px 2px 6px;text-align:center;cursor:pointer;border:none;background:none;transition:all .2s;outline:none;position:relative}
+.nav-btn svg{width:20px;height:20px;stroke:var(--text2);stroke-width:1.7;fill:none;display:block;margin:0 auto 2px;transition:all .2s}
+.nav-btn span{font-size:9px;color:var(--text2);letter-spacing:.3px;display:block;font-weight:500;transition:all .2s}
 .nav-btn.on svg{stroke:var(--purple)}
 .nav-btn.on span{color:var(--purple);font-weight:700}
 .nav-btn.on::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:20px;height:2px;background:var(--purple);border-radius:2px 2px 0 0}
 .nav-center svg{stroke:white !important}
 .nav-center-wrap{display:flex;align-items:center;justify-content:center;padding:6px 0}
-.nav-center-btn{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--purple2));display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(127,119,221,0.4);transition:all .15s}
+.nav-center-btn{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--purple2));display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(127,119,221,0.4);transition:all .15s}
 .nav-center-btn:active{transform:scale(0.92)}
 .nav-center-btn svg{width:20px;height:20px;stroke:white;stroke-width:2;fill:none}
 
@@ -305,7 +305,7 @@ body::after{content:'';position:fixed;bottom:-60px;left:-60px;width:250px;height
 </div>
 
 <!-- BLOCKS -->
-<div id="s-blocks" class="screen">
+<div id="s-blocks" class="screen" style="overflow-y:auto">
   <div class="header">
     <div class="header-blob1"></div>
     <div style="color:rgba(255,255,255,.6);font-size:10px;letter-spacing:2px;font-weight:700;position:relative;z-index:1">FLUX</div>
@@ -380,6 +380,10 @@ body::after{content:'';position:fixed;bottom:-60px;left:-60px;width:250px;height
   </div>
   <div class="section-head">ДОСТИЖЕНИЯ</div>
   <div class="achievement-list" id="ach-list"></div>
+  <div class="section-head">РЕЙТИНГ 🏆</div>
+  <div style="padding:0 12px 12px" id="leaderboard-inline">
+    <div style="text-align:center;color:var(--text2);font-size:13px;padding:16px">Загрузка...</div>
+  </div>
 </div>
 
 
@@ -400,31 +404,27 @@ body::after{content:'';position:fixed;bottom:-60px;left:-60px;width:250px;height
 <!-- NAV -->
 <nav class="bottom-nav">
   <button class="nav-btn on" onclick="goTo('s-home')" id="nav-home">
-    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;stroke-width:1.7;fill:none;display:block;margin:0 auto 2px"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
     <span>главная</span>
   </button>
   <button class="nav-btn" onclick="goTo('s-blocks')" id="nav-blocks">
-    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    <svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;stroke-width:1.7;fill:none;display:block;margin:0 auto 2px"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
     <span>блоки</span>
   </button>
-  <button class="nav-btn" onclick="goTo('s-add')" id="nav-add" style="padding-top:6px">
-    <div class="nav-center-wrap">
-      <div class="nav-center-btn">
-        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  <button class="nav-btn" onclick="goTo('s-add')" id="nav-add" style="padding-top:4px">
+    <div style="display:flex;align-items:center;justify-content:center">
+      <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--purple2));display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(127,119,221,0.4)">
+        <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:white;stroke-width:2.2;fill:none"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       </div>
     </div>
   </button>
   <button class="nav-btn" onclick="goTo('s-all')" id="nav-all">
-    <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+    <svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;stroke-width:1.7;fill:none;display:block;margin:0 auto 2px"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
     <span>идеи</span>
   </button>
   <button class="nav-btn" onclick="goTo('s-stats')" id="nav-stats">
-    <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    <svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;stroke-width:1.7;fill:none;display:block;margin:0 auto 2px"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
     <span>прогресс</span>
-  </button>
-  <button class="nav-btn" onclick="goTo('s-leaders')" id="nav-leaders">
-    <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-    <span>рейтинг</span>
   </button>
 </nav>
 
@@ -572,13 +572,13 @@ function goTo(id){
   document.getElementById(id).classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
   const map={'s-home':'nav-home','s-all':'nav-all','s-done':'nav-all','s-links':'nav-all',
-    's-blocks':'nav-blocks','s-block-detail':'nav-blocks','s-add':'nav-add','s-stats':'nav-stats','s-leaders':'nav-leaders','s-summary':'nav-all'};
+    's-blocks':'nav-blocks','s-block-detail':'nav-blocks','s-add':'nav-add','s-stats':'nav-stats','s-summary':'nav-all'};
   if(map[id]) document.getElementById(map[id]).classList.add('on');
   if(id==='s-all') renderAll();
   if(id==='s-done') renderDone();
   if(id==='s-links') renderLinks();
   if(id==='s-blocks') renderBlocks();
-  if(id==='s-stats') renderStats();
+  if(id==='s-stats'){renderStats();renderLeaderboardInline();}
   if(id==='s-leaders') renderLeaderboard();
   window.scrollTo(0,0);
 }
@@ -784,6 +784,39 @@ async function saveIdea(){
   }catch(e){showToast('⚠️ Нет связи с сервером');}
 }
 
+
+
+async function renderLeaderboardInline(){
+  const el=document.getElementById('leaderboard-inline');
+  if(!el)return;
+  try{
+    const r=await fetch(`${API}/api/leaderboard`);
+    const d=await r.json();
+    const board=d.leaderboard||[];
+    if(!board.length){el.innerHTML='<div style="text-align:center;color:var(--text2);font-size:13px;padding:16px">Пока нет участников</div>';return;}
+    const medals=['🥇','🥈','🥉'];
+    el.innerHTML=board.map((u,i)=>{
+      const avatar=AVATARS[u.user_id%AVATARS.length];
+      const isMe=u.user_id==userId;
+      const medal=medals[i]||`${i+1}.`;
+      const level=Math.floor((u.xp||0)/100)+1;
+      return `<div style="background:var(--card);border:1.5px solid ${isMe?'var(--purple)':'var(--border)'};border-radius:14px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:10px;${isMe?'box-shadow:0 4px 16px rgba(127,119,221,0.2)':''}">
+        <div style="font-size:${i<3?'20px':'14px'};font-weight:800;width:28px;text-align:center;color:${isMe?'var(--purple)':'var(--text2)'}">${medal}</div>
+        <div style="width:36px;height:36px;border-radius:50%;background:${isMe?'var(--purple-light)':'var(--bg2)'};display:flex;align-items:center;justify-content:center;font-size:18px;border:2px solid ${isMe?'var(--purple)':'var(--border)'};flex-shrink:0">${avatar}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:700;color:${isMe?'var(--purple)':'var(--text)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.name||'Игрок'}${isMe?' 👈':''}</div>
+          <div style="font-size:10px;color:var(--text2);margin-top:1px">Ур.${level} · ${u.total_ideas||0} идей · ${u.done_count||0} выполнено</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:16px;font-weight:800;color:var(--purple)">${u.xp||0}</div>
+          <div style="font-size:9px;color:var(--text2);letter-spacing:1px">XP</div>
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){
+    document.getElementById('leaderboard-inline').innerHTML='<div style="text-align:center;color:var(--text2);font-size:13px;padding:16px">⚠️ Нет связи</div>';
+  }
+}
 
 async function renderLeaderboard(){
   const el=document.getElementById('leaderboard-content');
