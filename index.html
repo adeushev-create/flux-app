@@ -546,7 +546,7 @@ function renderHome(){
   document.getElementById('streak-pill').textContent=`🔥 ${userStats.streak||0} дн.`;
   document.getElementById('s-total').textContent=allIdeas.length;
   document.getElementById('s-done-num').textContent=allIdeas.filter(i=>i.done).length;
-  document.getElementById('s-links-num').textContent=allIdeas.filter(i=>i.url).length;
+
   document.getElementById('donut-num').textContent=allIdeas.length;
   renderDonut();
   renderWeekBars();
