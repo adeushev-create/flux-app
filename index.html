@@ -2,249 +2,274 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>FLUX</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
-  --purple:#7F77DD;--purple2:#9B94E8;--purple-light:#EEEDFE;--purple-dark:#3C3489;
-  --teal:#1D9E75;--teal-light:#E1F5EE;
-  --coral:#D85A30;--coral-light:#FAECE7;
-  --amber:#BA7517;--amber-light:#FAEEDA;
-  --blue:#378ADD;--blue-light:#E6F1FB;
-  --pink:#D4537E;--pink-light:#FBEAF0;
-  --green:#639922;--green-light:#EAF3DE;
-  --bg:#f8f7ff;--bg2:#efeffa;--card:#ffffff;--border:#e4e2f7;
-  --text:#1a1820;--text2:#7c7a9e;
+  --p:#7F77DD;--p2:#9B94E8;--p3:#5a50c8;
+  --teal:#1D9E75;--coral:#D85A30;--amber:#BA7517;--pink:#D4537E;--blue:#378ADD;
+  --bg:#f5f4ff;--bg2:#eeeeff;--card:#ffffff;--border:#e2e0f5;
+  --text:#16141f;--text2:#7875a0;
 }
 @media(prefers-color-scheme:dark){
-  :root{--bg:#13121e;--bg2:#1e1d2e;--card:#252438;--border:#312f4a;--text:#f0eeff;--text2:#8e8cae}
+  :root{--bg:#0f0e1a;--bg2:#181628;--card:#1e1c2e;--border:#2e2b45;--text:#f0eeff;--text2:#8e8ab5}
 }
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;max-width:430px;margin:0 auto;overflow-x:hidden}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);max-width:430px;margin:0 auto;position:relative}
 
-/* Ambient background blobs */
-body::before{content:'';position:fixed;top:-80px;right:-80px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(127,119,221,0.18) 0%,transparent 70%);pointer-events:none;z-index:0}
-body::after{content:'';position:fixed;bottom:-60px;left:-60px;width:250px;height:250px;border-radius:50%;background:radial-gradient(circle,rgba(29,158,117,0.13) 0%,transparent 70%);pointer-events:none;z-index:0}
-
-.screen{display:none;min-height:100vh;padding-bottom:100px;position:relative;z-index:1}
-.screen.active{display:block;animation:fadeUp .22s ease}
-@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+/* SCREENS */
+.screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;padding-bottom:90px;display:none;-webkit-overflow-scrolling:touch}
+.screen.active{display:block}
+.screen.enter{animation:slideUp .3s cubic-bezier(.34,1.2,.64,1) forwards}
+.screen.exit{animation:slideDown .25s ease-in forwards}
+@keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes slideDown{from{transform:translateY(0);opacity:1}to{transform:translateY(40px);opacity:0}}
 
 /* HEADER */
-.header{padding:52px 16px 20px;background:linear-gradient(135deg,#6c64d4 0%,#8b83e0 50%,#7F77DD 100%);position:relative;overflow:hidden}
-.header-blob1{position:absolute;top:-30px;right:-30px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.08);pointer-events:none}
-.header-blob2{position:absolute;bottom:-50px;left:20px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.05);pointer-events:none}
-.header-top{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:1}
-.avatar-wrap{display:flex;align-items:center;gap:10px}
-.avatar{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,0.22);display:flex;align-items:center;justify-content:center;font-size:24px;border:2px solid rgba(255,255,255,0.3)}
-.app-name{font-size:11px;letter-spacing:3px;color:rgba(255,255,255,0.6);font-weight:600}
-.user-name{font-size:17px;color:white;font-weight:700;margin-top:1px}
-.xp-pill{background:rgba(255,255,255,0.18);border-radius:16px;padding:8px 14px;text-align:center;border:1px solid rgba(255,255,255,0.2)}
-.xp-num{font-size:20px;font-weight:800;color:white;line-height:1}
-.xp-label{font-size:9px;color:rgba(255,255,255,0.65);letter-spacing:1.5px;margin-top:1px}
-.streak-row{display:flex;align-items:center;gap:6px;margin-top:5px;justify-content:flex-end}
-.streak-pill{background:rgba(255,255,255,0.15);border-radius:20px;padding:3px 10px;font-size:12px;color:white;border:1px solid rgba(255,255,255,0.2)}
-.level-section{margin-top:14px;position:relative;z-index:1}
-.level-row{display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,0.7);margin-bottom:6px}
-.level-name{font-weight:700;color:white}
-.lvl-bar{background:rgba(255,255,255,0.2);border-radius:20px;height:7px}
-.lvl-fill{background:white;border-radius:20px;height:7px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+.header{padding:52px 16px 18px;background:linear-gradient(160deg,var(--p3) 0%,var(--p) 45%,var(--p2) 100%);position:relative;overflow:hidden}
+.h-orb{position:absolute;border-radius:50%;pointer-events:none}
+.h-orb1{top:-50px;right:-40px;width:180px;height:180px;background:rgba(255,255,255,0.09)}
+.h-orb2{bottom:-40px;left:-20px;width:130px;height:130px;background:rgba(255,255,255,0.06)}
+.h-orb3{top:20px;left:40%;width:80px;height:80px;background:rgba(255,255,255,0.04)}
+.h-top{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:1}
+.h-left{display:flex;align-items:center;gap:10px}
+.avatar{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:22px;border:2px solid rgba(255,255,255,0.35);flex-shrink:0}
+.h-name-wrap{}
+.h-flux{font-size:9px;letter-spacing:3px;color:rgba(255,255,255,0.55);font-weight:700}
+.h-name{font-size:17px;color:white;font-weight:800;margin-top:1px;line-height:1}
+.h-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+.xp-pill{background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.25);border-radius:14px;padding:7px 13px;text-align:center;backdrop-filter:blur(10px)}
+.xp-num{font-size:19px;font-weight:900;color:white;line-height:1}
+.xp-label{font-size:8px;color:rgba(255,255,255,0.6);letter-spacing:1.5px;margin-top:1px}
+.streak-pill{background:rgba(255,255,255,0.13);border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:3px 10px;font-size:11px;color:white;font-weight:700}
+.h-level{margin-top:14px;position:relative;z-index:1}
+.h-level-row{display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.65);margin-bottom:7px;font-weight:500}
+.h-level-name{color:white;font-weight:800;font-size:12px}
+.lvl-track{background:rgba(255,255,255,0.18);border-radius:20px;height:7px;overflow:hidden}
+.lvl-fill{height:7px;border-radius:20px;background:white;box-shadow:0 0 12px rgba(255,255,255,0.6);width:0%;transition:width 1s cubic-bezier(.34,1.1,.64,1)}
 
 /* STATS */
-.stats-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:12px}
-.stat-card{background:var(--card);border-radius:16px;padding:14px 8px;text-align:center;cursor:pointer;border:1.5px solid transparent;transition:all .15s;position:relative;overflow:hidden;box-shadow:0 2px 12px rgba(127,119,221,0.08)}
+.stats-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:12px}
+.stat-card{background:var(--card);border-radius:18px;padding:14px 12px;text-align:center;cursor:pointer;border:1.5px solid var(--border);transition:transform .15s,box-shadow .15s;box-shadow:0 2px 12px rgba(127,119,221,0.07)}
 .stat-card:active{transform:scale(0.95)}
-.stat-card.purple{border-color:rgba(127,119,221,0.2)}
-.stat-card.purple:hover{border-color:var(--purple);box-shadow:0 4px 20px rgba(127,119,221,0.2)}
-.stat-card.teal{border-color:rgba(29,158,117,0.2)}
-.stat-card.teal:hover{border-color:var(--teal);box-shadow:0 4px 20px rgba(29,158,117,0.15)}
-.stat-card.coral{border-color:rgba(216,90,48,0.2)}
-.stat-card.coral:hover{border-color:var(--coral);box-shadow:0 4px 20px rgba(216,90,48,0.15)}
-.stat-num{font-size:26px;font-weight:800}
-.stat-label{font-size:10px;color:var(--text2);margin-top:3px;font-weight:500}
-.stat-arrow{position:absolute;bottom:7px;right:9px;font-size:11px;color:var(--text2);opacity:0.5}
+.stat-num{font-size:28px;font-weight:900;line-height:1;transition:all .3s}
+.stat-label{font-size:10px;color:var(--text2);margin-top:4px;font-weight:600;letter-spacing:.3px}
 
 /* DONUT */
-.donut-section{padding:0 12px 4px;display:flex;gap:14px;align-items:center}
-.donut-wrap{position:relative;width:120px;height:120px;flex-shrink:0;cursor:pointer}
-.donut-wrap svg{width:120px;height:120px;transform:rotate(-90deg)}
-.donut-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none}
-.donut-big{font-size:28px;font-weight:800;color:var(--text);line-height:1}
-.donut-sub{font-size:10px;color:var(--text2);margin-top:2px;letter-spacing:.5px}
+.donut-wrap{padding:0 12px 6px;display:flex;gap:14px;align-items:center}
+.donut-svg-wrap{position:relative;width:110px;height:110px;flex-shrink:0;cursor:pointer}
+.donut-svg-wrap svg{width:110px;height:110px;transform:rotate(-90deg)}
+.donut-svg-wrap circle{transition:stroke-dasharray .8s cubic-bezier(.34,1.1,.64,1)}
+.donut-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.donut-num{font-size:26px;font-weight:900;color:var(--text);line-height:1}
+.donut-sub{font-size:9px;color:var(--text2);letter-spacing:.5px;font-weight:600}
 .legend{flex:1}
-.leg-item{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:10px;cursor:pointer;transition:all .15s;margin-bottom:2px}
-.leg-item:hover{background:var(--bg2)}
-.leg-item:active{transform:scale(0.97)}
+.leg{display:flex;align-items:center;gap:7px;padding:4px 8px;border-radius:10px;cursor:pointer;transition:all .12s;margin-bottom:2px}
+.leg:active{transform:scale(0.97)}
 .leg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
-.leg-name{font-size:12px;color:var(--text);flex:1;font-weight:500}
-.leg-count{font-size:12px;font-weight:700;color:var(--text2)}
+.leg-name{font-size:12px;color:var(--text);flex:1;font-weight:600}
+.leg-cnt{font-size:12px;font-weight:800;color:var(--text2)}
 
-.section-head{font-size:10px;font-weight:700;color:var(--text2);letter-spacing:1.5px;padding:12px 16px 6px}
+/* SECTION HEAD */
+.sec-head{font-size:9px;font-weight:800;color:var(--text2);letter-spacing:1.8px;padding:10px 16px 6px}
 
 /* WEEK BARS */
 .week-bars{padding:0 16px 8px}
-.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.bar-day{font-size:11px;color:var(--text2);width:22px;font-weight:500}
-.bar-track{flex:1;background:var(--bg2);border-radius:20px;height:8px;overflow:hidden}
-.bar-fill{height:8px;border-radius:20px;background:linear-gradient(90deg,var(--purple),var(--purple2));transition:width .6s ease}
-.bar-cnt{font-size:11px;color:var(--text2);width:14px;text-align:right;font-weight:600}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.bar-day{font-size:10px;color:var(--text2);width:20px;font-weight:700}
+.bar-track{flex:1;background:var(--bg2);border-radius:20px;height:7px;overflow:hidden}
+.bar-fill{height:7px;border-radius:20px;background:linear-gradient(90deg,var(--p),var(--p2));width:0%;transition:width .7s cubic-bezier(.34,1.1,.64,1)}
+.bar-cnt{font-size:10px;color:var(--text2);width:14px;text-align:right;font-weight:700}
 
-/* BOTTOM NAV */
-.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--card);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(5,1fr);z-index:100;backdrop-filter:blur(10px);padding-bottom:env(safe-area-inset-bottom)}
-.nav-btn{padding:6px 2px 6px;text-align:center;cursor:pointer;border:none;background:none;transition:all .2s;outline:none;position:relative}
-.nav-btn svg{width:20px;height:20px;stroke:var(--text2);stroke-width:1.7;fill:none;display:block;margin:0 auto 2px;transition:all .2s}
-.nav-btn span{font-size:9px;color:var(--text2);letter-spacing:.3px;display:block;font-weight:500;transition:all .2s}
-.nav-btn.on svg{stroke:var(--purple)}
-.nav-btn.on span{color:var(--purple);font-weight:700}
-.nav-btn.on::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:20px;height:2px;background:var(--purple);border-radius:2px 2px 0 0}
-.nav-center svg{stroke:white !important}
-.nav-center-wrap{display:flex;align-items:center;justify-content:center;padding:6px 0}
-.nav-center-btn{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--purple2));display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(127,119,221,0.4);transition:all .15s}
-.nav-center-btn:active{transform:scale(0.92)}
-.nav-center-btn svg{width:20px;height:20px;stroke:white;stroke-width:2;fill:none}
+/* IDEAS ON HOME */
+.home-ideas{padding:0 12px}
+.idea-card{background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:12px;margin-bottom:8px;box-shadow:0 2px 10px rgba(127,119,221,0.06);animation:cardIn .3s ease both}
+@keyframes cardIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.idea-card.done{opacity:0.4}
+.ic-top{display:flex;gap:9px;align-items:flex-start}
+.ic-check{font-size:18px;flex-shrink:0}
+.ic-body{flex:1;min-width:0}
+.ic-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.tag{font-size:9px;padding:2px 8px;border-radius:20px;font-weight:800;letter-spacing:.3px}
+.xp-tag{font-size:9px;color:var(--text2);font-weight:700}
+.ic-text{font-size:13px;color:var(--text);line-height:1.45;font-weight:500}
+.ic-sub{font-size:11px;color:var(--text2);margin-top:2px}
+.ic-actions{display:flex;gap:6px;margin-top:9px;padding-top:9px;border-top:1px solid var(--border)}
+.ic-btn{flex:1;padding:8px;border-radius:10px;border:none;font-size:11px;font-weight:800;cursor:pointer;transition:transform .12s}
+.ic-btn:active{transform:scale(0.95)}
+.btn-done{background:var(--teal-light,#E1F5EE);color:var(--teal)}
+.btn-undo{background:#FAECE7;color:var(--coral)}
+.btn-edit{background:var(--bg2);color:var(--p);flex:0.45}
 
 /* BACK HEADER */
-.back-header{padding:52px 16px 16px;background:linear-gradient(135deg,#6c64d4 0%,#8b83e0 100%);position:relative;overflow:hidden}
-.back-btn{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);color:white;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:20px;margin-bottom:10px;font-weight:500}
-.back-title{color:white;font-size:22px;font-weight:800}
-.back-sub{color:rgba(255,255,255,0.65);font-size:13px;margin-top:3px}
-
-/* IDEA CARDS */
-.idea-list{padding:10px 12px}
-.idea-card{background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:13px;margin-bottom:8px;box-shadow:0 2px 10px rgba(127,119,221,0.06);transition:all .15s}
-.idea-card.done{opacity:0.45}
-.idea-card-top{display:flex;gap:10px;align-items:flex-start}
-.idea-check{font-size:20px;flex-shrink:0}
-.idea-body{flex:1;min-width:0}
-.idea-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
-.tag{font-size:10px;padding:3px 9px;border-radius:20px;font-weight:700;letter-spacing:.3px}
-.xp-tag{font-size:10px;color:var(--text2);font-weight:600}
-.idea-text{font-size:13px;color:var(--text);line-height:1.45;font-weight:500}
-.idea-sub{font-size:11px;color:var(--text2);margin-top:3px}
-.idea-actions{display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
-.action-btn{flex:1;padding:8px;border-radius:10px;border:none;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
-.action-btn:active{transform:scale(0.96)}
-.btn-done{background:var(--teal-light);color:var(--teal)}
-.btn-undo{background:var(--coral-light);color:var(--coral)}
+.back-header{padding:52px 16px 16px;background:linear-gradient(160deg,var(--p3),var(--p));position:relative;overflow:hidden}
+.back-header::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.08)}
+.back-btn{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);color:white;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:20px;margin-bottom:10px;font-weight:700;position:relative;z-index:1}
+.back-title{color:white;font-size:22px;font-weight:900;position:relative;z-index:1}
+.back-sub{color:rgba(255,255,255,0.65);font-size:12px;margin-top:3px;font-weight:500;position:relative;z-index:1}
 
 /* BLOCKS */
 .blocks-grid{padding:10px 12px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.block-card{border-radius:18px;padding:16px;cursor:pointer;transition:all .18s;box-shadow:0 2px 12px rgba(0,0,0,0.06);border:1.5px solid transparent}
+.block-card{border-radius:18px;padding:16px;cursor:pointer;transition:transform .15s,box-shadow .15s;border:1.5px solid transparent}
 .block-card:active{transform:scale(0.95)}
 .block-icon{font-size:28px;margin-bottom:8px}
-.block-name{font-size:14px;font-weight:700;color:var(--text)}
-.block-count{font-size:12px;color:var(--text2);margin-top:2px;font-weight:500}
+.block-name{font-size:14px;font-weight:800;color:var(--text)}
+.block-count{font-size:11px;color:var(--text2);margin-top:2px;font-weight:600}
 
 /* ADD SCREEN */
-.record-section{padding:16px}
-.record-btn{width:100%;border:none;border-radius:16px;padding:16px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .15s}
-.record-btn.idle{background:linear-gradient(135deg,var(--purple),var(--purple2));color:white;box-shadow:0 4px 20px rgba(127,119,221,0.35)}
-.record-btn.recording{background:linear-gradient(135deg,#e74c3c,#c0392b);color:white;animation:pulse .8s infinite;box-shadow:0 4px 20px rgba(231,76,60,0.4)}
-.record-btn.processing{background:var(--bg2);color:var(--text2)}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.85;transform:scale(0.99)}}
-.text-area{width:100%;border:1.5px solid var(--border);border-radius:14px;padding:13px;font-size:14px;color:var(--text);background:var(--card);resize:none;outline:none;font-family:inherit;margin-bottom:10px;min-height:90px;box-shadow:0 2px 8px rgba(127,119,221,0.06)}
-.text-area:focus{border-color:var(--purple)}
-.topic-select{width:100%;border:1.5px solid var(--border);border-radius:14px;padding:11px 12px;font-size:14px;color:var(--text);background:var(--card);outline:none;margin-bottom:10px;appearance:none;font-family:inherit;font-weight:500}
-.topic-select:focus{border-color:var(--purple)}
-.save-btn{width:100%;background:linear-gradient(135deg,var(--purple),var(--purple2));color:white;border:none;border-radius:14px;padding:15px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(127,119,221,0.35)}
-.save-btn:active{transform:scale(0.97)}
-.status-msg{text-align:center;font-size:13px;color:var(--text2);padding:8px;min-height:36px;font-weight:500}
+.add-section{padding:16px}
+.rec-btn{width:100%;border:none;border-radius:16px;padding:16px;font-size:14px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .15s;letter-spacing:.3px}
+.rec-btn.idle{background:linear-gradient(135deg,var(--p3),var(--p2));color:white;box-shadow:0 6px 24px rgba(127,119,221,0.4)}
+.rec-btn.recording{background:linear-gradient(135deg,#c0392b,#e74c3c);color:white;animation:recPulse .9s infinite}
+.rec-btn.processing{background:var(--bg2);color:var(--text2)}
+@keyframes recPulse{0%,100%{box-shadow:0 6px 24px rgba(231,76,60,0.4)}50%{box-shadow:0 6px 32px rgba(231,76,60,0.7);transform:scale(1.01)}}
+.text-area{width:100%;border:1.5px solid var(--border);border-radius:14px;padding:13px;font-size:14px;color:var(--text);background:var(--card);resize:none;outline:none;font-family:'Inter',sans-serif;margin-bottom:10px;min-height:90px;font-weight:500;transition:border-color .2s}
+.text-area:focus{border-color:var(--p)}
+.topic-select{width:100%;border:1.5px solid var(--border);border-radius:14px;padding:11px 12px;font-size:14px;color:var(--text);background:var(--card);outline:none;margin-bottom:10px;appearance:none;font-family:'Inter',sans-serif;font-weight:600;transition:border-color .2s}
+.topic-select:focus{border-color:var(--p)}
+.save-btn{width:100%;background:linear-gradient(135deg,var(--p3),var(--p2));color:white;border:none;border-radius:14px;padding:15px;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 6px 24px rgba(127,119,221,0.4);transition:transform .12s,box-shadow .12s;letter-spacing:.3px}
+.save-btn:active{transform:scale(0.97);box-shadow:0 3px 12px rgba(127,119,221,0.3)}
+.status-msg{text-align:center;font-size:12px;color:var(--text2);padding:8px;min-height:34px;font-weight:600}
 
 /* STATS SCREEN */
-.level-card{margin:10px 12px;background:linear-gradient(135deg,rgba(127,119,221,0.12),rgba(127,119,221,0.06));border:1.5px solid rgba(127,119,221,0.2);border-radius:18px;padding:16px;display:flex;align-items:center;gap:14px}
-.level-circle{width:62px;height:62px;border-radius:50%;border:3px solid var(--purple);display:flex;align-items:center;justify-content:center;flex-direction:column;flex-shrink:0;background:rgba(127,119,221,0.1)}
-.level-num{font-size:22px;font-weight:800;color:var(--purple)}
-.level-lbl{font-size:9px;color:var(--purple);letter-spacing:.5px;font-weight:600}
-.level-info{flex:1}
-.level-title{font-size:15px;font-weight:700;color:var(--text)}
-.level-progress-bar{background:rgba(127,119,221,0.15);border-radius:20px;height:7px;margin-top:7px}
-.level-progress-fill{background:linear-gradient(90deg,var(--purple),var(--purple2));border-radius:20px;height:7px;transition:width .6s ease}
-.level-progress-text{font-size:11px;color:var(--purple);margin-top:4px;font-weight:600}
+.level-card{margin:10px 12px;background:linear-gradient(135deg,rgba(127,119,221,0.1),rgba(127,119,221,0.05));border:1.5px solid rgba(127,119,221,0.2);border-radius:18px;padding:16px;display:flex;align-items:center;gap:14px}
+.level-circle{width:62px;height:62px;border-radius:50%;border:3px solid var(--p);display:flex;align-items:center;justify-content:center;flex-direction:column;flex-shrink:0;background:rgba(127,119,221,0.08)}
+.level-num{font-size:22px;font-weight:900;color:var(--p)}
+.level-lbl{font-size:8px;color:var(--p);letter-spacing:.5px;font-weight:700}
+.level-info-wrap{flex:1}
+.level-title{font-size:15px;font-weight:800;color:var(--text)}
+.level-bar-track{background:rgba(127,119,221,0.15);border-radius:20px;height:7px;margin-top:7px;overflow:hidden}
+.level-bar-fill{background:linear-gradient(90deg,var(--p),var(--p2));border-radius:20px;height:7px;width:0%;transition:width .8s cubic-bezier(.34,1.1,.64,1)}
+.level-bar-text{font-size:10px;color:var(--p);margin-top:4px;font-weight:700}
 .stats-cards{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 12px}
-.stats-big-card{background:var(--card);border-radius:16px;padding:14px;border:1.5px solid var(--border);box-shadow:0 2px 10px rgba(127,119,221,0.06)}
-.sbc-label{font-size:11px;color:var(--text2);margin-bottom:5px;font-weight:600;letter-spacing:.5px}
-.sbc-val{font-size:28px;font-weight:800}
-.achievement-list{padding:0 12px 10px;display:flex;flex-wrap:wrap;gap:8px}
-.ach{background:var(--card);border:1.5px solid var(--border);border-radius:20px;padding:6px 13px;font-size:12px;color:var(--text);font-weight:600;box-shadow:0 2px 8px rgba(127,119,221,0.06)}
-.ach.locked{opacity:.35;border-style:dashed}
-.ach.unlocked{border-color:rgba(127,119,221,0.4);background:var(--purple-light);color:var(--purple-dark)}
+.sbc{background:var(--card);border-radius:16px;padding:14px;border:1.5px solid var(--border);box-shadow:0 2px 10px rgba(127,119,221,0.06)}
+.sbc-label{font-size:9px;color:var(--text2);margin-bottom:5px;font-weight:800;letter-spacing:1px}
+.sbc-val{font-size:28px;font-weight:900}
+.ach-list{padding:0 12px 10px;display:flex;flex-wrap:wrap;gap:7px}
+.ach{background:var(--card);border:1.5px solid var(--border);border-radius:20px;padding:6px 13px;font-size:11px;color:var(--text);font-weight:700;box-shadow:0 2px 8px rgba(127,119,221,0.05)}
+.ach.unlocked{border-color:rgba(127,119,221,0.4);background:#EEEDFE;color:#3C3489}
+.ach.locked{opacity:.3;border-style:dashed}
+
+/* LEADERBOARD */
+.lb-card{background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:13px;margin-bottom:8px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 10px rgba(127,119,221,0.05);transition:transform .12s}
+.lb-card.me{border-color:var(--p);box-shadow:0 4px 20px rgba(127,119,221,0.2)}
+.lb-card:active{transform:scale(0.98)}
+.lb-rank{font-size:18px;font-weight:900;width:28px;text-align:center}
+.lb-avatar{width:38px;height:38px;border-radius:50%;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:18px;border:2px solid var(--border);flex-shrink:0}
+.lb-avatar.me{border-color:var(--p);background:#EEEDFE}
+.lb-info{flex:1;min-width:0}
+.lb-name{font-size:13px;font-weight:800;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb-sub{font-size:10px;color:var(--text2);margin-top:1px;font-weight:600}
+.lb-xp{text-align:right;flex-shrink:0}
+.lb-xp-num{font-size:17px;font-weight:900;color:var(--p)}
+.lb-xp-label{font-size:8px;color:var(--text2);letter-spacing:1px;font-weight:700}
+.lb-mini{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+.lb-mini-item{text-align:center}
+.lb-mini-val{font-size:13px;font-weight:800;color:var(--text)}
+.lb-mini-label{font-size:9px;color:var(--text2);font-weight:600}
+
+/* EDIT SCREEN */
+.edit-label{font-size:9px;font-weight:800;color:var(--text2);letter-spacing:1.5px;margin-bottom:6px;margin-top:14px}
+.del-btn{width:100%;background:#FAECE7;color:var(--coral);border:1.5px solid rgba(216,90,48,0.2);border-radius:14px;padding:14px;font-size:14px;font-weight:800;cursor:pointer;margin-top:8px;transition:transform .12s}
+.del-btn:active{transform:scale(0.97)}
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:300;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.confirm-sheet{background:var(--card);border-radius:22px 22px 0 0;padding:24px 20px 36px;width:100%;max-width:430px;animation:sheetUp .25s cubic-bezier(.34,1.2,.64,1)}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.confirm-title{font-size:17px;font-weight:900;color:var(--text);margin-bottom:5px;text-align:center}
+.confirm-sub{font-size:13px;color:var(--text2);text-align:center;margin-bottom:20px;font-weight:500}
+.confirm-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.confirm-cancel{background:var(--bg2);color:var(--text);border:none;border-radius:13px;padding:14px;font-size:14px;font-weight:800;cursor:pointer}
+.confirm-delete{background:var(--coral);color:white;border:none;border-radius:13px;padding:14px;font-size:14px;font-weight:800;cursor:pointer}
+
+/* SUMMARY SECTION */
+.summary-btn{margin:12px 12px 0;background:linear-gradient(135deg,rgba(127,119,221,0.1),rgba(127,119,221,0.05));border:1.5px solid rgba(127,119,221,0.22);border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:transform .12s}
+.summary-btn:active{transform:scale(0.98)}
 
 /* TOAST */
-.toast{position:fixed;top:60px;left:50%;transform:translateX(-50%) translateY(-10px);background:var(--text);color:var(--bg);padding:10px 20px;border-radius:20px;font-size:13px;font-weight:600;z-index:999;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap}
+.toast{position:fixed;top:56px;left:50%;transform:translateX(-50%) translateY(-10px);background:var(--text);color:var(--bg);padding:10px 20px;border-radius:22px;font-size:13px;font-weight:700;z-index:999;opacity:0;transition:all .25s cubic-bezier(.34,1.2,.64,1);pointer-events:none;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,0.2)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-.edit-field-label{font-size:11px;font-weight:700;color:var(--text2);letter-spacing:1px;margin-bottom:6px;margin-top:14px}
-.delete-btn{width:100%;background:var(--coral-light);color:var(--coral);border:1.5px solid rgba(216,90,48,0.2);border-radius:14px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px}
-.delete-btn:active{transform:scale(0.97)}
-.confirm-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:flex-end;justify-content:center}
-.confirm-sheet{background:var(--card);border-radius:20px 20px 0 0;padding:24px 20px 36px;width:100%;max-width:430px}
-.confirm-title{font-size:17px;font-weight:700;color:var(--text);margin-bottom:6px;text-align:center}
-.confirm-sub{font-size:13px;color:var(--text2);text-align:center;margin-bottom:20px}
-.confirm-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.confirm-cancel{background:var(--bg2);color:var(--text);border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:700;cursor:pointer}
-.confirm-delete{background:var(--coral);color:white;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:700;cursor:pointer}
+/* CONFETTI */
+.confetti-piece{position:fixed;width:8px;height:8px;border-radius:2px;pointer-events:none;z-index:998;animation:confettiFall 1s ease-in forwards}
+@keyframes confettiFall{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+
+/* NAV */
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--card);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(5,1fr);z-index:100;padding:8px 0 calc(10px + env(safe-area-inset-bottom))}
+.nb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:4px 2px;cursor:pointer;border:none;background:none;outline:none;transition:transform .15s;min-height:52px}
+.nb:active{transform:scale(0.88)}
+.nb svg{width:24px;height:24px;stroke:var(--text2);stroke-width:1.5;fill:none;transition:stroke .18s}
+.nb span{font-size:10px;font-weight:600;color:var(--text2);transition:color .18s;letter-spacing:.1px}
+.nb.on svg{stroke:var(--p)}
+.nb.on span{color:var(--p);font-weight:800}
+.nb-add{position:relative}
+.nb-plus{width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--p3),var(--p2));display:flex;align-items:center;justify-content:center;box-shadow:0 5px 20px rgba(127,119,221,0.5);margin-top:-18px;transition:transform .15s,box-shadow .15s}
+.nb-add:active .nb-plus{transform:scale(0.9);box-shadow:0 3px 10px rgba(127,119,221,0.3)}
+.nb-plus svg{width:22px;height:22px;stroke:white;stroke-width:2.5;fill:none}
+
+/* IDEA LIST (non-home) */
+.idea-list{padding:10px 12px}
 </style>
 </head>
 <body>
-
 <div class="toast" id="toast"></div>
+<div id="confetti-container"></div>
 
 <!-- HOME -->
 <div id="s-home" class="screen active">
   <div class="header">
-    <div class="header-blob1"></div>
-    <div class="header-blob2"></div>
-    <div class="header-top">
-      <div class="avatar-wrap">
+    <div class="h-orb h-orb1"></div><div class="h-orb h-orb2"></div><div class="h-orb h-orb3"></div>
+    <div class="h-top">
+      <div class="h-left">
         <div class="avatar" id="user-avatar">🦊</div>
-        <div>
-          <div class="app-name">FLUX</div>
-          <div class="user-name" id="user-name">Загрузка...</div>
+        <div class="h-name-wrap">
+          <div class="h-flux">FLUX</div>
+          <div class="h-name" id="user-name">...</div>
         </div>
       </div>
-      <div>
-        <div class="xp-pill">
-          <div class="xp-num" id="xp-num">0</div>
-          <div class="xp-label">XP</div>
-        </div>
-        <div class="streak-row"><div class="streak-pill" id="streak-pill">🔥 0 дн.</div></div>
+      <div class="h-right">
+        <div class="xp-pill"><div class="xp-num" id="xp-num">0</div><div class="xp-label">XP</div></div>
+        <div class="streak-pill" id="streak-pill">🔥 0 дн.</div>
       </div>
     </div>
-    <div class="level-section">
-      <div class="level-row">
-        <span class="level-name" id="level-name">Уровень 1</span>
-        <span id="level-xp-text">0 / 100</span>
-      </div>
-      <div class="lvl-bar"><div class="lvl-fill" id="lvl-fill" style="width:0%"></div></div>
+    <div class="h-level">
+      <div class="h-level-row"><span class="h-level-name" id="level-name">Ур.1 · Новичок</span><span id="level-xp-text">0/100</span></div>
+      <div class="lvl-track"><div class="lvl-fill" id="lvl-fill"></div></div>
     </div>
   </div>
-  <div class="stats-grid" style="grid-template-columns:1fr 1fr">
-    <div class="stat-card purple" onclick="goTo('s-all')">
-      <div class="stat-num" id="s-total" style="color:var(--purple)">0</div>
-      <div class="stat-label">идей</div>
-      <div class="stat-arrow">→</div>
-    </div>
-    <div class="stat-card teal" onclick="goTo('s-done')">
-      <div class="stat-num" id="s-done-num" style="color:var(--teal)">0</div>
-      <div class="stat-label">выполнено</div>
-      <div class="stat-arrow">→</div>
-    </div>
 
+  <div class="stats-row">
+    <div class="stat-card" onclick="goTo('s-all')" style="border-color:rgba(127,119,221,0.25)">
+      <div class="stat-num" id="s-total" style="color:var(--p)">0</div>
+      <div class="stat-label">ИДЕЙ</div>
+    </div>
+    <div class="stat-card" onclick="goTo('s-done')" style="border-color:rgba(29,158,117,0.25)">
+      <div class="stat-num" id="s-done-num" style="color:var(--teal)">0</div>
+      <div class="stat-label">ВЫПОЛНЕНО</div>
+    </div>
   </div>
-  <div class="donut-section">
-    <div class="donut-wrap" onclick="goTo('s-all')">
-      <svg viewBox="0 0 120 120" id="donut-svg">
-        <circle cx="60" cy="60" r="46" fill="none" stroke="var(--bg2)" stroke-width="13"/>
+
+  <div class="donut-wrap">
+    <div class="donut-svg-wrap" onclick="goTo('s-all')">
+      <svg viewBox="0 0 110 110" id="donut-svg">
+        <circle cx="55" cy="55" r="42" fill="none" stroke="var(--bg2)" stroke-width="12"/>
       </svg>
       <div class="donut-center">
-        <div class="donut-big" id="donut-num">0</div>
-        <div class="donut-sub">идей</div>
+        <div class="donut-num" id="donut-num">0</div>
+        <div class="donut-sub">ИДЕЙ</div>
       </div>
     </div>
-    <div class="legend" id="donut-legend"></div>
+    <div class="legend" id="donut-legend"><div style="color:var(--text2);font-size:12px;font-weight:600">Пока нет идей</div></div>
   </div>
-  <div class="section-head">АКТИВНОСТЬ НЕДЕЛИ</div>
+
+  <div class="sec-head">ИДЕИ НЕДЕЛИ</div>
+  <div class="home-ideas" id="home-ideas-list"></div>
+
+  <div class="sec-head">АКТИВНОСТЬ</div>
   <div class="week-bars" id="week-bars"></div>
 </div>
 
@@ -255,40 +280,14 @@ body::after{content:'';position:fixed;bottom:-60px;left:-60px;width:250px;height
     <div class="back-title">Все идеи</div>
     <div class="back-sub" id="all-sub"></div>
   </div>
-  <div style="padding:12px 12px 0">
-    <button onclick="goTo('s-summary')" style="width:100%;background:linear-gradient(135deg,rgba(127,119,221,0.12),rgba(127,119,221,0.06));border:1.5px solid rgba(127,119,221,0.25);border-radius:14px;padding:13px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .15s">
-      <span style="font-size:22px">📊</span>
-      <div style="text-align:left">
-        <div style="font-size:14px;font-weight:700;color:var(--purple)">Сводка недели</div>
-        <div style="font-size:11px;color:var(--text2);margin-top:1px">Запросить у бота сводку и план на выходные</div>
-      </div>
-      <span style="margin-left:auto;font-size:16px;color:var(--purple)">→</span>
-    </button>
-  </div>
-  <div class="idea-list" id="all-list"></div>
-</div>
-
-<!-- SUMMARY -->
-<div id="s-summary" class="screen">
-  <div class="back-header">
-    <button class="back-btn" onclick="goTo('s-all')">← назад</button>
-    <div class="back-title">Сводка недели 📊</div>
-    <div class="back-sub">план на выходные</div>
-  </div>
-  <div style="padding:12px">
-    <div id="summary-content">
-      <div style="background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:20px;text-align:center;margin-bottom:12px">
-        <div style="font-size:36px;margin-bottom:8px">🤖</div>
-        <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px">Запросить сводку</div>
-        <div style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.5">Бот проанализирует все твои идеи за неделю и составит план на выходные</div>
-        <button onclick="requestSummary()" style="background:linear-gradient(135deg,var(--purple),var(--purple2));color:white;border:none;border-radius:12px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(127,119,221,0.35)">⚡ Получить сводку</button>
-      </div>
-      <div id="summary-ideas" style="background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:16px">
-        <div style="font-size:11px;font-weight:700;color:var(--text2);letter-spacing:1px;margin-bottom:12px">ИДЕИ ЗА НЕДЕЛЮ ПО ТЕМАМ</div>
-        <div id="summary-topics"></div>
-      </div>
+  <div class="summary-btn" onclick="goTo('s-summary')">
+    <span style="font-size:22px">📊</span>
+    <div>
+      <div style="font-size:14px;font-weight:800;color:var(--p)">Сводка недели</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:1px;font-weight:500">план на выходные →</div>
     </div>
   </div>
+  <div class="idea-list" id="all-list"></div>
 </div>
 
 <!-- DONE -->
@@ -301,22 +300,12 @@ body::after{content:'';position:fixed;bottom:-60px;left:-60px;width:250px;height
   <div class="idea-list" id="done-list"></div>
 </div>
 
-<!-- LINKS -->
-<div id="s-links" class="screen">
-  <div class="back-header">
-    <button class="back-btn" onclick="goTo('s-home')">← назад</button>
-    <div class="back-title">Ссылки 🔗</div>
-    <div class="back-sub" id="links-sub"></div>
-  </div>
-  <div class="idea-list" id="links-list"></div>
-</div>
-
 <!-- BLOCKS -->
-<div id="s-blocks" class="screen" style="overflow-y:auto">
+<div id="s-blocks" class="screen">
   <div class="header">
-    <div class="header-blob1"></div>
-    <div style="color:rgba(255,255,255,.6);font-size:10px;letter-spacing:2px;font-weight:700;position:relative;z-index:1">FLUX</div>
-    <div style="color:white;font-size:22px;font-weight:800;margin-top:4px;position:relative;z-index:1">По блокам</div>
+    <div class="h-orb h-orb1"></div><div class="h-orb h-orb2"></div>
+    <div style="color:rgba(255,255,255,.55);font-size:9px;letter-spacing:3px;font-weight:800;position:relative;z-index:1">FLUX</div>
+    <div style="color:white;font-size:22px;font-weight:900;margin-top:5px;position:relative;z-index:1">По блокам</div>
   </div>
   <div class="blocks-grid" id="blocks-grid"></div>
 </div>
@@ -334,28 +323,22 @@ body::after{content:'';position:fixed;bottom:-60px;left:-60px;width:250px;height
 <!-- ADD -->
 <div id="s-add" class="screen">
   <div class="header">
-    <div class="header-blob1"></div>
-    <div style="color:rgba(255,255,255,.6);font-size:10px;letter-spacing:2px;font-weight:700;position:relative;z-index:1">FLUX</div>
-    <div style="color:white;font-size:22px;font-weight:800;margin-top:4px;position:relative;z-index:1">Новая идея</div>
+    <div class="h-orb h-orb1"></div><div class="h-orb h-orb2"></div>
+    <div style="color:rgba(255,255,255,.55);font-size:9px;letter-spacing:3px;font-weight:800;position:relative;z-index:1">FLUX</div>
+    <div style="color:white;font-size:22px;font-weight:900;margin-top:5px;position:relative;z-index:1">Новая идея</div>
   </div>
-  <div class="record-section">
-    <button class="record-btn idle" id="rec-btn" onclick="toggleRecord()">
-      <span id="rec-icon">🎤</span>
-      <span id="rec-text">Надиктовать голосом</span>
+  <div class="add-section">
+    <button class="rec-btn idle" id="rec-btn" onclick="toggleRecord()">
+      <span id="rec-icon">🎤</span><span id="rec-text">Надиктовать голосом</span>
     </button>
     <div class="status-msg" id="rec-status"></div>
-    <textarea class="text-area" id="idea-text" placeholder="Или напиши идею здесь..."></textarea>
+    <textarea class="text-area" id="idea-text" placeholder="Или напиши идею..."></textarea>
     <select class="topic-select" id="topic-select">
-      <option value="Идея">💡 Идея</option>
-      <option value="Проект">🚀 Проект</option>
-      <option value="Работа">💼 Работа</option>
-      <option value="Обучение">📚 Обучение</option>
-      <option value="Книга">📖 Книга</option>
-      <option value="Видео">🎬 Видео</option>
-      <option value="Здоровье">💪 Здоровье</option>
-      <option value="Личное">🌱 Личное</option>
-      <option value="Финансы">💰 Финансы</option>
-      <option value="Разное">📌 Разное</option>
+      <option value="Идея">💡 Идея</option><option value="Проект">🚀 Проект</option>
+      <option value="Работа">💼 Работа</option><option value="Обучение">📚 Обучение</option>
+      <option value="Книга">📖 Книга</option><option value="Видео">🎬 Видео</option>
+      <option value="Здоровье">💪 Здоровье</option><option value="Личное">🌱 Личное</option>
+      <option value="Финансы">💰 Финансы</option><option value="Разное">📌 Разное</option>
     </select>
     <button class="save-btn" onclick="saveIdea()">⚡ Сохранить идею</button>
   </div>
@@ -364,80 +347,75 @@ body::after{content:'';position:fixed;bottom:-60px;left:-60px;width:250px;height
 <!-- STATS -->
 <div id="s-stats" class="screen">
   <div class="header">
-    <div class="header-blob1"></div>
-    <div style="color:rgba(255,255,255,.6);font-size:10px;letter-spacing:2px;font-weight:700;position:relative;z-index:1">FLUX</div>
-    <div style="color:white;font-size:22px;font-weight:800;margin-top:4px;position:relative;z-index:1">Прогресс</div>
+    <div class="h-orb h-orb1"></div><div class="h-orb h-orb2"></div>
+    <div style="color:rgba(255,255,255,.55);font-size:9px;letter-spacing:3px;font-weight:800;position:relative;z-index:1">FLUX</div>
+    <div style="color:white;font-size:22px;font-weight:900;margin-top:5px;position:relative;z-index:1">Прогресс</div>
   </div>
   <div class="level-card">
-    <div class="level-circle">
-      <div class="level-num" id="st-level">1</div>
-      <div class="level-lbl">уровень</div>
-    </div>
-    <div class="level-info">
+    <div class="level-circle"><div class="level-num" id="st-level">1</div><div class="level-lbl">уровень</div></div>
+    <div class="level-info-wrap">
       <div class="level-title" id="st-level-name">Новичок</div>
-      <div class="level-progress-bar"><div class="level-progress-fill" id="st-lvl-fill" style="width:0%"></div></div>
-      <div class="level-progress-text" id="st-lvl-text">0 / 100 XP</div>
+      <div class="level-bar-track"><div class="level-bar-fill" id="st-lvl-fill"></div></div>
+      <div class="level-bar-text" id="st-lvl-text">0 / 100 XP</div>
     </div>
   </div>
-  <div class="stats-cards">
-    <div class="stats-big-card"><div class="sbc-label">ВСЕГО XP</div><div class="sbc-val" id="st-xp" style="color:var(--purple)">0</div></div>
-    <div class="stats-big-card"><div class="sbc-label">СЕРИЯ</div><div class="sbc-val" id="st-streak" style="color:var(--coral)">🔥 0</div></div>
-    <div class="stats-big-card"><div class="sbc-label">ВЫПОЛНЕНО</div><div class="sbc-val" id="st-done" style="color:var(--teal)">0</div></div>
-    <div class="stats-big-card"><div class="sbc-label">ПРОДУКТ.</div><div class="sbc-val" id="st-prod" style="color:var(--amber)">0%</div></div>
+  <div class="stats-cards" style="margin-top:10px">
+    <div class="sbc"><div class="sbc-label">ВСЕГО XP</div><div class="sbc-val" id="st-xp" style="color:var(--p)">0</div></div>
+    <div class="sbc"><div class="sbc-label">СЕРИЯ</div><div class="sbc-val" id="st-streak" style="color:var(--coral)">🔥 0</div></div>
+    <div class="sbc"><div class="sbc-label">ВЫПОЛНЕНО</div><div class="sbc-val" id="st-done" style="color:var(--teal)">0</div></div>
+    <div class="sbc"><div class="sbc-label">ПРОДУКТ.</div><div class="sbc-val" id="st-prod" style="color:var(--amber)">0%</div></div>
   </div>
-  <div class="section-head">ДОСТИЖЕНИЯ</div>
-  <div class="achievement-list" id="ach-list"></div>
-  <div class="section-head">РЕЙТИНГ 🏆</div>
-  <div style="padding:0 12px 12px" id="leaderboard-inline">
-    <div style="text-align:center;color:var(--text2);font-size:13px;padding:16px">Загрузка...</div>
+  <div class="sec-head" style="margin-top:10px">ДОСТИЖЕНИЯ</div>
+  <div class="ach-list" id="ach-list"></div>
+  <div class="sec-head" style="margin-top:6px">РЕЙТИНГ 🏆</div>
+  <div style="padding:0 12px 12px" id="leaderboard-inline"><div style="text-align:center;color:var(--text2);padding:20px;font-size:13px;font-weight:600">Загрузка...</div></div>
+</div>
+
+<!-- SUMMARY -->
+<div id="s-summary" class="screen">
+  <div class="back-header">
+    <button class="back-btn" onclick="goTo('s-all')">← назад</button>
+    <div class="back-title">Сводка недели 📊</div>
+    <div class="back-sub">план на выходные</div>
+  </div>
+  <div style="padding:12px">
+    <div style="background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:20px;text-align:center;margin-bottom:12px;box-shadow:0 2px 12px rgba(127,119,221,0.08)">
+      <div style="font-size:40px;margin-bottom:10px">🤖</div>
+      <div style="font-size:15px;font-weight:800;color:var(--text);margin-bottom:6px">Запросить сводку</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:18px;line-height:1.6;font-weight:500">Напиши боту /summary — он проанализирует идеи и пришлёт план на выходные</div>
+      <button onclick="requestSummary()" style="background:linear-gradient(135deg,var(--p3),var(--p2));color:white;border:none;border-radius:13px;padding:13px 24px;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(127,119,221,0.4)">⚡ Получить сводку</button>
+    </div>
+    <div style="background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:16px;box-shadow:0 2px 12px rgba(127,119,221,0.06)">
+      <div style="font-size:9px;font-weight:800;color:var(--text2);letter-spacing:1.5px;margin-bottom:12px">ИДЕИ ПО ТЕМАМ</div>
+      <div id="summary-topics"></div>
+    </div>
   </div>
 </div>
 
-
-<!-- LEADERBOARD -->
-<div id="s-leaders" class="screen">
-  <div class="header">
-    <div class="header-blob1"></div>
-    <div class="header-blob2"></div>
-    <div style="color:rgba(255,255,255,.6);font-size:10px;letter-spacing:2px;font-weight:700;position:relative;z-index:1">FLUX</div>
-    <div style="color:white;font-size:22px;font-weight:800;margin-top:4px;position:relative;z-index:1">Рейтинг 🏆</div>
-    <div style="color:rgba(255,255,255,.65);font-size:13px;margin-top:3px;position:relative;z-index:1">Топ игроков по XP</div>
-  </div>
-  <div style="padding:12px" id="leaderboard-content">
-    <div style="text-align:center;color:var(--text2);padding:30px">Загрузка...</div>
-  </div>
-</div>
-
-
-<!-- EDIT IDEA -->
+<!-- EDIT -->
 <div id="s-edit" class="screen">
   <div class="back-header">
     <button class="back-btn" onclick="cancelEdit()">← назад</button>
     <div class="back-title">Редактировать</div>
   </div>
   <div style="padding:12px">
-    <div class="edit-field-label">ТЕКСТ ИДЕИ</div>
+    <div class="edit-label">ТЕКСТ ИДЕИ</div>
     <textarea class="text-area" id="edit-content" style="min-height:100px"></textarea>
-    <div class="edit-field-label">ТЕМА</div>
+    <div class="edit-label">ТЕМА</div>
     <select class="topic-select" id="edit-topic">
-      <option value="Идея">💡 Идея</option>
-      <option value="Проект">🚀 Проект</option>
-      <option value="Работа">💼 Работа</option>
-      <option value="Обучение">📚 Обучение</option>
-      <option value="Книга">📖 Книга</option>
-      <option value="Видео">🎬 Видео</option>
-      <option value="Здоровье">💪 Здоровье</option>
-      <option value="Личное">🌱 Личное</option>
-      <option value="Финансы">💰 Финансы</option>
-      <option value="Разное">📌 Разное</option>
+      <option value="Идея">💡 Идея</option><option value="Проект">🚀 Проект</option>
+      <option value="Работа">💼 Работа</option><option value="Обучение">📚 Обучение</option>
+      <option value="Книга">📖 Книга</option><option value="Видео">🎬 Видео</option>
+      <option value="Здоровье">💪 Здоровье</option><option value="Личное">🌱 Личное</option>
+      <option value="Финансы">💰 Финансы</option><option value="Разное">📌 Разное</option>
     </select>
-    <div class="edit-field-label">ССЫЛКА (необязательно)</div>
-    <input type="url" id="edit-url" placeholder="https://..." style="width:100%;border:1.5px solid var(--border);border-radius:14px;padding:11px 12px;font-size:14px;color:var(--text);background:var(--card);outline:none;font-family:inherit;margin-bottom:4px">
-    <div class="edit-field-label">ОЦЕНКА ВРЕМЕНИ (часов)</div>
-    <input type="number" id="edit-hours" placeholder="например 2" min="0" max="100" step="0.5" style="width:100%;border:1.5px solid var(--border);border-radius:14px;padding:11px 12px;font-size:14px;color:var(--text);background:var(--card);outline:none;font-family:inherit;margin-bottom:4px">
+    <div class="edit-label">ССЫЛКА</div>
+    <input type="url" id="edit-url" placeholder="https://..." style="width:100%;border:1.5px solid var(--border);border-radius:14px;padding:11px 12px;font-size:14px;color:var(--text);background:var(--card);outline:none;font-family:'Inter',sans-serif;font-weight:500;margin-bottom:4px;transition:border-color .2s">
+    <div class="edit-label">ВРЕМЯ (часов)</div>
+    <input type="number" id="edit-hours" placeholder="например 2" min="0" step="0.5" style="width:100%;border:1.5px solid var(--border);border-radius:14px;padding:11px 12px;font-size:14px;color:var(--text);background:var(--card);outline:none;font-family:'Inter',sans-serif;font-weight:500;margin-bottom:4px">
     <div style="height:14px"></div>
-    <button class="save-btn" onclick="saveEdit()">💾 Сохранить изменения</button>
-    <button class="delete-btn" onclick="showDeleteConfirm()">🗑 Удалить идею</button>
+    <button class="save-btn" onclick="saveEdit()">💾 Сохранить</button>
+    <button class="del-btn" onclick="showDeleteConfirm()">🗑 Удалить идею</button>
   </div>
 </div>
 
@@ -455,27 +433,23 @@ body::after{content:'';position:fixed;bottom:-60px;left:-60px;width:250px;height
 
 <!-- NAV -->
 <nav class="bottom-nav">
-  <button class="nav-btn on" onclick="goTo('s-home')" id="nav-home">
-    <svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;stroke-width:1.7;fill:none;display:block;margin:0 auto 2px"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+  <button class="nb on" onclick="goTo('s-home')" id="nav-home">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
     <span>главная</span>
   </button>
-  <button class="nav-btn" onclick="goTo('s-blocks')" id="nav-blocks">
-    <svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;stroke-width:1.7;fill:none;display:block;margin:0 auto 2px"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+  <button class="nb" onclick="goTo('s-blocks')" id="nav-blocks">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
     <span>блоки</span>
   </button>
-  <button class="nav-btn" onclick="goTo('s-add')" id="nav-add" style="padding-top:4px">
-    <div style="display:flex;align-items:center;justify-content:center">
-      <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--purple2));display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(127,119,221,0.4)">
-        <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:white;stroke-width:2.2;fill:none"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      </div>
-    </div>
+  <button class="nb nb-add" onclick="goTo('s-add')" id="nav-add">
+    <div class="nb-plus"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
   </button>
-  <button class="nav-btn" onclick="goTo('s-all')" id="nav-all">
-    <svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;stroke-width:1.7;fill:none;display:block;margin:0 auto 2px"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+  <button class="nb" onclick="goTo('s-all')" id="nav-all">
+    <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
     <span>идеи</span>
   </button>
-  <button class="nav-btn" onclick="goTo('s-stats')" id="nav-stats">
-    <svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;stroke-width:1.7;fill:none;display:block;margin:0 auto 2px"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+  <button class="nb" onclick="goTo('s-stats')" id="nav-stats">
+    <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
     <span>прогресс</span>
   </button>
 </nav>
@@ -485,7 +459,7 @@ const tg=window.Telegram?.WebApp;
 if(tg){tg.ready();tg.expand();}
 const AVATARS=["🦊","🐺","🦁","🐯","🦅","🐉","🦋","🦩","🐬","🦄","🐸","🦀"];
 const LEVELS=["Новичок","Искатель","Строитель","Архитектор","Мастер","Легенда"];
-const TOPIC_COLORS={
+const TC={
   "Проект":["#EEEDFE","#534AB7","#7F77DD"],
   "Обучение":["#E1F5EE","#0F6E56","#1D9E75"],
   "Книга":["#E1F5EE","#0F6E56","#1D9E75"],
@@ -497,8 +471,8 @@ const TOPIC_COLORS={
   "Финансы":["#FAEEDA","#854F0B","#BA7517"],
   "Разное":["#F1EFE8","#444441","#888780"],
 };
-const TOPIC_EMOJI={"Проект":"🚀","Обучение":"📚","Книга":"📖","Идея":"💡","Работа":"💼","Видео":"🎬","Здоровье":"💪","Личное":"🌱","Финансы":"💰","Разное":"📌","Ссылка":"🔗"};
-const BLOCK_STYLES={
+const TE={"Проект":"🚀","Обучение":"📚","Книга":"📖","Идея":"💡","Работа":"💼","Видео":"🎬","Здоровье":"💪","Личное":"🌱","Финансы":"💰","Разное":"📌","Ссылка":"🔗"};
+const BS={
   "Проект":{bg:"#EEEDFE",border:"rgba(127,119,221,0.3)"},
   "Обучение":{bg:"#E1F5EE",border:"rgba(29,158,117,0.3)"},
   "Книга":{bg:"#E1F5EE",border:"rgba(29,158,117,0.3)"},
@@ -507,19 +481,52 @@ const BLOCK_STYLES={
   "Видео":{bg:"#FBEAF0",border:"rgba(212,83,126,0.3)"},
   "Здоровье":{bg:"#E6F1FB",border:"rgba(55,138,221,0.3)"},
   "Личное":{bg:"#EAF3DE",border:"rgba(99,153,34,0.3)"},
+  "Финансы":{bg:"#FAEEDA",border:"rgba(186,117,23,0.3)"},
+  "Разное":{bg:"#F1EFE8",border:"rgba(136,135,128,0.3)"},
 };
 
 let userId=tg?.initDataUnsafe?.user?.id||12345;
 let userName=tg?.initDataUnsafe?.user?.first_name||"Пользователь";
-let allIdeas=[];
-let userStats={};
+let allIdeas=[],userStats={};
+let currentEditId=null,editFromScreen='s-all';
 const API='https://worker-production-32bb.up.railway.app';
+
+function animateNum(el,target,dur=800){
+  const start=parseInt(el.textContent)||0;
+  const range=target-start;
+  if(range===0)return;
+  const step=16;
+  const steps=dur/step;
+  let cur=0;
+  const timer=setInterval(()=>{
+    cur++;
+    el.textContent=Math.round(start+range*(cur/steps));
+    if(cur>=steps){el.textContent=target;clearInterval(timer);}
+  },step);
+}
 
 function showToast(msg){
   const t=document.getElementById('toast');
-  t.textContent=msg;
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2200);
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+function confetti(){
+  const colors=['#7F77DD','#1D9E75','#D85A30','#F1C40F','#E91E63','#00BCD4'];
+  const container=document.getElementById('confetti-container');
+  for(let i=0;i<18;i++){
+    const el=document.createElement('div');
+    el.className='confetti-piece';
+    el.style.cssText=`
+      left:${20+Math.random()*60}%;top:40%;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      transform:scale(${0.5+Math.random()});
+      animation-delay:${Math.random()*0.3}s;
+      animation-duration:${0.8+Math.random()*0.6}s;
+    `;
+    container.appendChild(el);
+    setTimeout(()=>el.remove(),1500);
+  }
 }
 
 async function loadData(){
@@ -533,45 +540,45 @@ async function loadData(){
 }
 
 function renderHome(){
-  const avatar=AVATARS[userId%AVATARS.length];
-  document.getElementById('user-avatar').textContent=avatar;
+  const av=AVATARS[userId%AVATARS.length];
+  document.getElementById('user-avatar').textContent=av;
   document.getElementById('user-name').textContent=userName;
   const xp=userStats.xp||0;
   const level=Math.floor(xp/100)+1;
-  const xpInLevel=xp%100;
-  document.getElementById('xp-num').textContent=xp;
+  const xpIn=xp%100;
   document.getElementById('level-name').textContent=`Ур.${level} · ${LEVELS[Math.min(level-1,LEVELS.length-1)]}`;
-  document.getElementById('level-xp-text').textContent=`${xpInLevel}/100`;
-  setTimeout(()=>document.getElementById('lvl-fill').style.width=xpInLevel+'%',100);
+  document.getElementById('level-xp-text').textContent=`${xpIn}/100`;
+  animateNum(document.getElementById('xp-num'),xp);
+  setTimeout(()=>document.getElementById('lvl-fill').style.width=xpIn+'%',200);
   document.getElementById('streak-pill').textContent=`🔥 ${userStats.streak||0} дн.`;
-  document.getElementById('s-total').textContent=allIdeas.length;
-  document.getElementById('s-done-num').textContent=allIdeas.filter(i=>i.done).length;
-
-  document.getElementById('donut-num').textContent=allIdeas.length;
+  animateNum(document.getElementById('s-total'),allIdeas.length);
+  animateNum(document.getElementById('s-done-num'),allIdeas.filter(i=>i.done).length);
+  animateNum(document.getElementById('donut-num'),allIdeas.length);
   renderDonut();
   renderWeekBars();
+  renderHomeIdeas();
 }
 
 function renderDonut(){
   const counts={};
   allIdeas.forEach(i=>{const t=i.topic||'Разное';counts[t]=(counts[t]||0)+1;});
   const total=allIdeas.length||1;
-  const R=46,C=2*Math.PI*R;
-  let svg=`<circle cx="60" cy="60" r="${R}" fill="none" stroke="var(--bg2)" stroke-width="13"/>`;
-  let offset=0,legend='';
+  const R=42,C=2*Math.PI*R;
+  let svg=`<circle cx="55" cy="55" r="${R}" fill="none" stroke="var(--bg2)" stroke-width="12"/>`;
+  let off=0,legend='';
   Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5).forEach(([topic,cnt])=>{
-    const col=(TOPIC_COLORS[topic]||TOPIC_COLORS["Разное"])[2];
+    const col=(TC[topic]||TC["Разное"])[2];
     const len=(cnt/total)*C;
-    svg+=`<circle cx="60" cy="60" r="${R}" fill="none" stroke="${col}" stroke-width="13" stroke-dasharray="${len} ${C}" stroke-dashoffset="${-offset}" stroke-linecap="round"/>`;
-    offset+=len;
-    legend+=`<div class="leg-item" onclick="showBlock('${topic}')">
+    svg+=`<circle cx="55" cy="55" r="${R}" fill="none" stroke="${col}" stroke-width="12" stroke-dasharray="${len} ${C}" stroke-dashoffset="${-off}" stroke-linecap="round"/>`;
+    off+=len;
+    legend+=`<div class="leg" onclick="showBlock('${topic}')">
       <div class="leg-dot" style="background:${col}"></div>
-      <div class="leg-name">${TOPIC_EMOJI[topic]||'📌'} ${topic}</div>
-      <div class="leg-count">${cnt}</div>
+      <div class="leg-name">${TE[topic]||'📌'} ${topic}</div>
+      <div class="leg-cnt">${cnt}</div>
     </div>`;
   });
   document.getElementById('donut-svg').innerHTML=svg;
-  document.getElementById('donut-legend').innerHTML=legend||'<div style="color:var(--text2);font-size:13px;padding:8px">Пока нет идей</div>';
+  document.getElementById('donut-legend').innerHTML=legend||'<div style="color:var(--text2);font-size:12px;font-weight:600">Пока нет идей 💡</div>';
 }
 
 function renderWeekBars(){
@@ -581,120 +588,107 @@ function renderWeekBars(){
   allIdeas.forEach(i=>{
     const d=new Date(i.created_at);
     const diff=Math.floor((now-d)/86400000);
-    if(diff<7){counts[(d.getDay()+6)%7]++;}
+    if(diff<7)counts[(d.getDay()+6)%7]++;
   });
   const max=Math.max(...counts,1);
   document.getElementById('week-bars').innerHTML=days.map((d,i)=>`
     <div class="bar-row">
       <div class="bar-day">${d}</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(counts[i]/max*100)}%"></div></div>
+      <div class="bar-track"><div class="bar-fill" style="width:0%" data-pct="${Math.round(counts[i]/max*100)}"></div></div>
       <div class="bar-cnt">${counts[i]}</div>
     </div>`).join('');
+  setTimeout(()=>{
+    document.querySelectorAll('.bar-fill').forEach((el,i)=>{
+      setTimeout(()=>el.style.width=el.dataset.pct+'%',i*60);
+    });
+  },100);
 }
 
-function renderIdeaCard(idea){
+function renderHomeIdeas(){
+  const pending=allIdeas.filter(i=>!i.done).slice(0,3);
+  const el=document.getElementById('home-ideas-list');
+  if(!pending.length){el.innerHTML='<div style="text-align:center;color:var(--text2);padding:20px;font-size:13px;font-weight:600">Нет активных идей — добавь первую! 💡</div>';return;}
+  el.innerHTML=pending.map((idea,idx)=>{
+    const html=renderIdeaCard(idea);
+    return html.replace('class="idea-card','class="idea-card" style="animation-delay:'+idx*0.06+'s" data-extra="');
+  }).join('').replace(/data-extra="[^"]*"/g,'');
+  el.innerHTML=pending.map((idea,idx)=>renderIdeaCardDelayed(idea,idx)).join('');
+}
+
+function renderIdeaCardDelayed(idea,delay){
   const t=idea.topic||'Разное';
-  const colors=TOPIC_COLORS[t]||TOPIC_COLORS["Разное"];
-  const emoji=TOPIC_EMOJI[t]||'📌';
+  const colors=TC[t]||TC["Разное"];
+  const emoji=TE[t]||'📌';
   const check=idea.done?'✅':'⬜';
-  const strike=idea.done?'style="text-decoration:line-through;opacity:0.6"':'';
+  const strike=idea.done?'style="text-decoration:line-through"':'';
   const hours=idea.estimated_hours?`· ⏱${idea.estimated_hours}ч`:'';
-  const link=idea.url?`<div class="idea-sub">🔗 ${idea.url.substring(0,40)}...</div>`:'';
-  const actionBtn=idea.done
-    ? `<button class="action-btn btn-undo" onclick="undoDone(event,${idea.id})">↩ Вернуть</button>`
-    : `<button class="action-btn btn-done" onclick="markDone(event,${idea.id})">✅ Выполнено</button>`;
-  return `<div class="idea-card ${idea.done?'done':''}" id="card-${idea.id}">
-    <div class="idea-card-top">
-      <div class="idea-check">${check}</div>
-      <div class="idea-body">
-        <div class="idea-meta">
+  const link=idea.url?`<div class="ic-sub">🔗 ${idea.url.substring(0,38)}...</div>`:'';
+  const actions=idea.done
+    ?`<button class="ic-btn btn-undo" onclick="undoDone(event,${idea.id})">↩ Вернуть</button>`
+    :`<button class="ic-btn btn-done" onclick="markDone(event,${idea.id})">✅ Выполнено</button>`;
+  return `<div class="idea-card ${idea.done?'done':''}" id="card-${idea.id}" style="animation-delay:${delay*0.07}s">
+    <div class="ic-top">
+      <div class="ic-check">${check}</div>
+      <div class="ic-body">
+        <div class="ic-meta">
           <span class="tag" style="background:${colors[0]};color:${colors[1]}">${emoji} ${t}</span>
           <span class="xp-tag">+${idea.xp_reward||10} XP ${hours}</span>
         </div>
-        <div class="idea-text" ${strike}>${idea.content}</div>
-        ${link}
+        <div class="ic-text" ${strike}>${idea.content}</div>${link}
       </div>
     </div>
-    <div class="idea-actions">
-      ${actionBtn}
-      <button class="action-btn" style="background:var(--purple-light);color:var(--purple);flex:0.5" onclick="openEdit(event,${idea.id})">✏️</button>
-    </div>
+    <div class="ic-actions">${actions}<button class="ic-btn btn-edit" onclick="openEdit(event,${idea.id})">✏️</button></div>
   </div>`;
 }
 
+function renderIdeaCard(idea){return renderIdeaCardDelayed(idea,0);}
+
 function goTo(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
+  const curr=document.querySelector('.screen.active');
+  if(curr&&curr.id===id)return;
+  if(curr)curr.classList.remove('active');
+  const next=document.getElementById(id);
+  next.classList.add('active','enter');
+  setTimeout(()=>next.classList.remove('enter'),350);
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
   const map={'s-home':'nav-home','s-all':'nav-all','s-done':'nav-all','s-links':'nav-all',
-    's-blocks':'nav-blocks','s-block-detail':'nav-blocks','s-add':'nav-add','s-stats':'nav-stats','s-summary':'nav-all'};
-  if(map[id]) document.getElementById(map[id]).classList.add('on');
-  if(id==='s-all') renderAll();
-  if(id==='s-done') renderDone();
-  if(id==='s-links') renderLinks();
-  if(id==='s-blocks') renderBlocks();
+    's-summary':'nav-all','s-blocks':'nav-blocks','s-block-detail':'nav-blocks',
+    's-add':'nav-add','s-stats':'nav-stats','s-edit':'nav-all','s-leaders':'nav-stats'};
+  if(map[id]) document.getElementById(map[id])?.classList.add('on');
+  next.scrollTop=0;
+  if(id==='s-all')renderAll();
+  if(id==='s-done')renderDone();
+  if(id==='s-blocks')renderBlocks();
   if(id==='s-stats'){renderStats();renderLeaderboardInline();}
-  if(id==='s-leaders') renderLeaderboard();
-  window.scrollTo(0,0);
+  if(id==='s-summary')renderSummaryTopics();
 }
 
 function renderAll(){
   document.getElementById('all-sub').textContent=`${allIdeas.length} записей за неделю`;
   document.getElementById('all-list').innerHTML=allIdeas.length
-    ?allIdeas.map(renderIdeaCard).join('')
-    :'<div style="text-align:center;color:var(--text2);padding:40px 20px">Пока нет идей 💡<br><br>Надиктуй или напиши первую!</div>';
-  renderSummaryTopics();
-}
-
-function renderSummaryTopics(){
-  const byTopic={};
-  allIdeas.forEach(i=>{const t=i.topic||'Разное';if(!byTopic[t])byTopic[t]=[];byTopic[t].push(i);});
-  const el=document.getElementById('summary-topics');
-  if(!el)return;
-  if(!allIdeas.length){el.innerHTML='<div style="color:var(--text2);font-size:13px;text-align:center;padding:10px">Нет идей за неделю</div>';return;}
-  el.innerHTML=Object.entries(byTopic).map(([topic,ideas])=>{
-    const emoji=TOPIC_EMOJI[topic]||'📌';
-    const done=ideas.filter(i=>i.done).length;
-    const colors=TOPIC_COLORS[topic]||TOPIC_COLORS["Разное"];
-    const items=ideas.map(i=>`<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)"><span style="font-size:14px;flex-shrink:0">${i.done?'✅':'⬜'}</span><span style="font-size:12px;color:var(--text);line-height:1.4;${i.done?'text-decoration:line-through;opacity:0.5':''}">${i.content}</span><span style="font-size:10px;color:var(--text2);flex-shrink:0;margin-left:auto">+${i.xp_reward||10}</span></div>`).join('');
-    return `<div style="margin-bottom:14px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px"><span style="font-size:13px;font-weight:700;color:var(--text)">${emoji} ${topic}</span><span style="font-size:11px;padding:2px 8px;border-radius:20px;background:${colors[0]};color:${colors[1]};font-weight:600">${done}/${ideas.length}</span></div>${items}</div>`;
-  }).join('');
-}
-
-function requestSummary(){
-  showToast('📨 Напиши /summary боту в чат!');
-  if(tg){tg.HapticFeedback?.notificationOccurred('success');setTimeout(()=>tg.close(),1800);}
+    ?allIdeas.map((i,idx)=>renderIdeaCardDelayed(i,idx)).join('')
+    :'<div style="text-align:center;color:var(--text2);padding:40px;font-size:13px;font-weight:600">Пока нет идей 💡</div>';
 }
 
 function renderDone(){
   const done=allIdeas.filter(i=>i.done);
   document.getElementById('done-sub').textContent=`${done.length} задач выполнено`;
   document.getElementById('done-list').innerHTML=done.length
-    ?done.map(renderIdeaCard).join('')
-    :'<div style="text-align:center;color:var(--text2);padding:40px 20px">Нет выполненных задач</div>';
-}
-
-function renderLinks(){
-  const links=allIdeas.filter(i=>i.url);
-  document.getElementById('links-sub').textContent=`${links.length} ссылок`;
-  document.getElementById('links-list').innerHTML=links.length
-    ?links.map(renderIdeaCard).join('')
-    :'<div style="text-align:center;color:var(--text2);padding:40px 20px">Нет сохранённых ссылок</div>';
+    ?done.map((i,idx)=>renderIdeaCardDelayed(i,idx)).join('')
+    :'<div style="text-align:center;color:var(--text2);padding:40px;font-size:13px;font-weight:600">Нет выполненных задач</div>';
 }
 
 function renderBlocks(){
   const BLOCKS=[
-    {key:'Проект',emoji:'🚀'},{key:'Обучение',emoji:'📚'},
-    {key:'Книга',emoji:'📖'},{key:'Видео',emoji:'🎬'},
-    {key:'Работа',emoji:'💼'},{key:'Идея',emoji:'💡'},
+    {key:'Проект',emoji:'🚀'},{key:'Обучение',emoji:'📚'},{key:'Книга',emoji:'📖'},
+    {key:'Видео',emoji:'🎬'},{key:'Работа',emoji:'💼'},{key:'Идея',emoji:'💡'},
     {key:'Здоровье',emoji:'💪'},{key:'Личное',emoji:'🌱'},
   ];
   const counts={};
   allIdeas.forEach(i=>{const t=i.topic||'Разное';counts[t]=(counts[t]||0)+1;});
-  const s=BLOCK_STYLES;
-  document.getElementById('blocks-grid').innerHTML=BLOCKS.map(b=>{
-    const st=s[b.key]||{bg:'var(--bg2)',border:'var(--border)'};
-    return `<div class="block-card" style="background:${st.bg};border-color:${st.border}" onclick="showBlock('${b.key}')">
+  document.getElementById('blocks-grid').innerHTML=BLOCKS.map((b,idx)=>{
+    const s=BS[b.key]||{bg:'var(--bg2)',border:'var(--border)'};
+    return `<div class="block-card" style="background:${s.bg};border-color:${s.border};animation:cardIn .3s ease ${idx*0.05}s both" onclick="showBlock('${b.key}')">
       <div class="block-icon">${b.emoji}</div>
       <div class="block-name">${b.key}</div>
       <div class="block-count">${counts[b.key]||0} идей</div>
@@ -704,29 +698,29 @@ function renderBlocks(){
 
 function showBlock(topic){
   const ideas=allIdeas.filter(i=>i.topic===topic);
-  document.getElementById('block-detail-title').textContent=`${TOPIC_EMOJI[topic]||'📌'} ${topic}`;
+  document.getElementById('block-detail-title').textContent=`${TE[topic]||'📌'} ${topic}`;
   document.getElementById('block-detail-sub').textContent=`${ideas.length} идей`;
   document.getElementById('block-detail-list').innerHTML=ideas.length
-    ?ideas.map(renderIdeaCard).join('')
-    :'<div style="text-align:center;color:var(--text2);padding:40px 20px">Нет идей в этом блоке</div>';
+    ?ideas.map((i,idx)=>renderIdeaCardDelayed(i,idx)).join('')
+    :'<div style="text-align:center;color:var(--text2);padding:40px;font-size:13px;font-weight:600">Нет идей в этом блоке</div>';
   goTo('s-block-detail');
 }
 
 function renderStats(){
   const xp=userStats.xp||0;
   const level=Math.floor(xp/100)+1;
-  const xpInLevel=xp%100;
+  const xpIn=xp%100;
   document.getElementById('st-level').textContent=level;
   document.getElementById('st-level-name').textContent=LEVELS[Math.min(level-1,LEVELS.length-1)];
-  document.getElementById('st-xp').textContent=xp;
+  animateNum(document.getElementById('st-xp'),xp);
   document.getElementById('st-streak').textContent=`🔥 ${userStats.streak||0}`;
-  document.getElementById('st-done').textContent=userStats.done_count||0;
+  animateNum(document.getElementById('st-done'),userStats.done_count||0);
   const prod=userStats.total_ideas?Math.round((userStats.done_count||0)/userStats.total_ideas*100):0;
   document.getElementById('st-prod').textContent=prod+'%';
   setTimeout(()=>{
-    document.getElementById('st-lvl-fill').style.width=xpInLevel+'%';
-    document.getElementById('st-lvl-text').textContent=`${xpInLevel} / 100 XP`;
-  },100);
+    document.getElementById('st-lvl-fill').style.width=xpIn+'%';
+    document.getElementById('st-lvl-text').textContent=`${xpIn} / 100 XP`;
+  },200);
   const total=userStats.total_ideas||0;
   const done=userStats.done_count||0;
   const achs=[
@@ -739,8 +733,61 @@ function renderStats(){
     {icon:'🏆',name:'Легенда',done:level>=5},
     {icon:'💡',name:'Генератор',done:total>=20},
   ];
-  document.getElementById('ach-list').innerHTML=achs.map(a=>
-    `<div class="ach ${a.done?'unlocked':'locked'}">${a.icon} ${a.name}</div>`).join('');
+  document.getElementById('ach-list').innerHTML=achs.map((a,i)=>
+    `<div class="ach ${a.done?'unlocked':'locked'}" style="animation:cardIn .3s ease ${i*0.04}s both">${a.icon} ${a.name}</div>`).join('');
+}
+
+async function renderLeaderboardInline(){
+  const el=document.getElementById('leaderboard-inline');
+  try{
+    const r=await fetch(`${API}/api/leaderboard`);
+    const d=await r.json();
+    const board=d.leaderboard||[];
+    if(!board.length){el.innerHTML='<div style="text-align:center;color:var(--text2);padding:20px;font-size:13px;font-weight:600">Пока нет участников</div>';return;}
+    const medals=['🥇','🥈','🥉'];
+    el.innerHTML=board.map((u,i)=>{
+      const av=AVATARS[u.user_id%AVATARS.length];
+      const isMe=u.user_id==userId;
+      const level=Math.floor((u.xp||0)/100)+1;
+      return `<div class="lb-card ${isMe?'me':''}" style="animation:cardIn .3s ease ${i*0.05}s both">
+        <div class="lb-rank" style="color:${isMe?'var(--p)':'var(--text2)'}">${medals[i]||i+1}</div>
+        <div class="lb-avatar ${isMe?'me':''}">${av}</div>
+        <div class="lb-info">
+          <div class="lb-name">${u.name||'Игрок'}${isMe?' 👈':''}</div>
+          <div class="lb-sub">Ур.${level} · ${u.total_ideas||0} идей</div>
+        </div>
+        <div class="lb-xp"><div class="lb-xp-num">${u.xp||0}</div><div class="lb-xp-label">XP</div></div>
+      </div>`;
+    }).join('');
+  }catch(e){el.innerHTML='<div style="text-align:center;color:var(--text2);padding:20px;font-size:13px">⚠️ Нет связи</div>';}
+}
+
+function renderSummaryTopics(){
+  const byTopic={};
+  allIdeas.forEach(i=>{const t=i.topic||'Разное';if(!byTopic[t])byTopic[t]=[];byTopic[t].push(i);});
+  const el=document.getElementById('summary-topics');
+  if(!el)return;
+  if(!allIdeas.length){el.innerHTML='<div style="color:var(--text2);font-size:13px;text-align:center;padding:10px;font-weight:600">Нет идей за неделю</div>';return;}
+  el.innerHTML=Object.entries(byTopic).map(([topic,ideas])=>{
+    const emoji=TE[topic]||'📌';
+    const done=ideas.filter(i=>i.done).length;
+    const colors=TC[topic]||TC["Разное"];
+    const items=ideas.map(i=>`<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:14px;flex-shrink:0">${i.done?'✅':'⬜'}</span>
+      <span style="font-size:12px;color:var(--text);line-height:1.4;font-weight:500;${i.done?'text-decoration:line-through;opacity:0.5':''}">${i.content}</span>
+      <span style="font-size:10px;color:var(--text2);flex-shrink:0;margin-left:auto;font-weight:700">+${i.xp_reward||10}</span>
+    </div>`).join('');
+    return `<div style="margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:13px;font-weight:800;color:var(--text)">${emoji} ${topic}</span>
+        <span style="font-size:10px;padding:2px 8px;border-radius:20px;background:${colors[0]};color:${colors[1]};font-weight:800">${done}/${ideas.length}</span>
+      </div>${items}</div>`;
+  }).join('');
+}
+
+function requestSummary(){
+  showToast('📨 Напиши /summary боту!');
+  if(tg){tg.HapticFeedback?.notificationOccurred('success');setTimeout(()=>tg.close(),1800);}
 }
 
 async function markDone(e,ideaId){
@@ -748,20 +795,16 @@ async function markDone(e,ideaId){
   const idea=allIdeas.find(i=>i.id===ideaId);
   if(!idea||idea.done)return;
   try{
-    const r=await fetch(`${API}/api/done`,{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({idea_id:ideaId,user_id:userId})
-    });
+    const r=await fetch(`${API}/api/done`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({idea_id:ideaId,user_id:userId})});
     const d=await r.json();
     if(d.ok){
       idea.done=1;
       userStats.xp=d.total_xp||0;
       userStats.done_count=(userStats.done_count||0)+1;
+      confetti();
       showToast(`✅ +${d.xp_gained} XP!`);
-      if(tg) tg.HapticFeedback?.impactOccurred('medium');
-      renderHome();
-      const card=document.getElementById(`card-${ideaId}`);
-      if(card) card.outerHTML=renderIdeaCard(idea);
+      if(tg)tg.HapticFeedback?.impactOccurred('medium');
+      await loadData();
     }
   }catch(e){showToast('⚠️ Нет связи');}
 }
@@ -772,9 +815,64 @@ async function undoDone(e,ideaId){
   if(!idea)return;
   idea.done=0;
   showToast('↩ Возвращено');
-  if(tg) tg.HapticFeedback?.impactOccurred('light');
-  const card=document.getElementById(`card-${ideaId}`);
-  if(card) card.outerHTML=renderIdeaCard(idea);
+  if(tg)tg.HapticFeedback?.impactOccurred('light');
+  renderHome();
+  const active=document.querySelector('.screen.active');
+  if(active&&active.id==='s-all')renderAll();
+}
+
+function openEdit(e,ideaId){
+  e.stopPropagation();
+  const idea=allIdeas.find(i=>i.id===ideaId);
+  if(!idea)return;
+  currentEditId=ideaId;
+  const active=document.querySelector('.screen.active');
+  editFromScreen=active?active.id:'s-all';
+  document.getElementById('edit-content').value=idea.content||'';
+  document.getElementById('edit-topic').value=idea.topic||'Идея';
+  document.getElementById('edit-url').value=idea.url||'';
+  document.getElementById('edit-hours').value=idea.estimated_hours||'';
+  goTo('s-edit');
+}
+
+function cancelEdit(){goTo(editFromScreen);}
+
+async function saveEdit(){
+  const content=document.getElementById('edit-content').value.trim();
+  const topic=document.getElementById('edit-topic').value;
+  const url=document.getElementById('edit-url').value.trim()||null;
+  const hours=parseFloat(document.getElementById('edit-hours').value)||null;
+  if(!content){showToast('⚠️ Текст не может быть пустым');return;}
+  try{
+    const r=await fetch(`${API}/api/ideas/update`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({idea_id:currentEditId,user_id:userId,content,topic,url,estimated_hours:hours})});
+    const d=await r.json();
+    if(d.ok){
+      const idea=allIdeas.find(i=>i.id===currentEditId);
+      if(idea){idea.content=content;idea.topic=topic;idea.url=url;idea.estimated_hours=hours;}
+      showToast('✅ Сохранено!');
+      if(tg)tg.HapticFeedback?.notificationOccurred('success');
+      await loadData();
+      goTo(editFromScreen);
+    }
+  }catch(e){showToast('⚠️ Нет связи');}
+}
+
+function showDeleteConfirm(){document.getElementById('delete-confirm').style.display='flex';}
+function hideDeleteConfirm(){document.getElementById('delete-confirm').style.display='none';}
+
+async function confirmDelete(){
+  hideDeleteConfirm();
+  try{
+    const r=await fetch(`${API}/api/ideas/delete`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({idea_id:currentEditId,user_id:userId})});
+    const d=await r.json();
+    if(d.ok){
+      allIdeas=allIdeas.filter(i=>i.id!==currentEditId);
+      showToast('🗑 Удалено');
+      if(tg)tg.HapticFeedback?.impactOccurred('heavy');
+      renderHome();
+      goTo(editFromScreen);
+    }
+  }catch(e){showToast('⚠️ Нет связи');}
 }
 
 let mediaRecorder=null,audioChunks=[];
@@ -783,7 +881,7 @@ async function toggleRecord(){
   const status=document.getElementById('rec-status');
   if(mediaRecorder?.state==='recording'){
     mediaRecorder.stop();
-    btn.className='record-btn processing';
+    btn.className='rec-btn processing';
     document.getElementById('rec-icon').textContent='⏳';
     document.getElementById('rec-text').textContent='Обрабатываю...';
     return;
@@ -803,18 +901,19 @@ async function toggleRecord(){
       try{
         const r=await fetch(`${API}/api/voice`,{method:'POST',body:form});
         const d=await r.json();
-        if(d.text) document.getElementById('idea-text').value=d.text;
+        if(d.text)document.getElementById('idea-text').value=d.text;
         status.textContent='✅ Расшифровано!';
       }catch(e){status.textContent='⚠️ Запишите текст вручную';}
-      btn.className='record-btn idle';
+      btn.className='rec-btn idle';
       document.getElementById('rec-icon').textContent='🎤';
       document.getElementById('rec-text').textContent='Надиктовать голосом';
     };
     mediaRecorder.start();
-    btn.className='record-btn recording';
+    btn.className='rec-btn recording';
     document.getElementById('rec-icon').textContent='⏹';
     document.getElementById('rec-text').textContent='Остановить запись';
     status.textContent='🔴 Идёт запись...';
+    if(tg)tg.HapticFeedback?.impactOccurred('light');
   }catch(e){status.textContent='⚠️ Нет доступа к микрофону';}
 }
 
@@ -823,174 +922,17 @@ async function saveIdea(){
   const topic=document.getElementById('topic-select').value;
   if(!text){showToast('⚠️ Напишите идею');return;}
   try{
-    const r=await fetch(`${API}/api/ideas`,{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({user_id:userId,content:text,topic,xp_reward:10})
-    });
+    const r=await fetch(`${API}/api/ideas`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:userId,content:text,topic,xp_reward:10})});
     const d=await r.json();
     if(d.ok){
       document.getElementById('idea-text').value='';
       document.getElementById('rec-status').textContent='';
       showToast('✅ Идея сохранена!');
-      if(tg) tg.HapticFeedback?.notificationOccurred('success');
+      if(tg)tg.HapticFeedback?.notificationOccurred('success');
       await loadData();
-      setTimeout(()=>goTo('s-home'),600);
+      setTimeout(()=>goTo('s-home'),500);
     }
-  }catch(e){showToast('⚠️ Нет связи с сервером');}
-}
-
-
-
-async function renderLeaderboardInline(){
-  const el=document.getElementById('leaderboard-inline');
-  if(!el)return;
-  try{
-    const r=await fetch(`${API}/api/leaderboard`);
-    const d=await r.json();
-    const board=d.leaderboard||[];
-    if(!board.length){el.innerHTML='<div style="text-align:center;color:var(--text2);font-size:13px;padding:16px">Пока нет участников</div>';return;}
-    const medals=['🥇','🥈','🥉'];
-    el.innerHTML=board.map((u,i)=>{
-      const avatar=AVATARS[u.user_id%AVATARS.length];
-      const isMe=u.user_id==userId;
-      const medal=medals[i]||`${i+1}.`;
-      const level=Math.floor((u.xp||0)/100)+1;
-      return `<div style="background:var(--card);border:1.5px solid ${isMe?'var(--purple)':'var(--border)'};border-radius:14px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:10px;${isMe?'box-shadow:0 4px 16px rgba(127,119,221,0.2)':''}">
-        <div style="font-size:${i<3?'20px':'14px'};font-weight:800;width:28px;text-align:center;color:${isMe?'var(--purple)':'var(--text2)'}">${medal}</div>
-        <div style="width:36px;height:36px;border-radius:50%;background:${isMe?'var(--purple-light)':'var(--bg2)'};display:flex;align-items:center;justify-content:center;font-size:18px;border:2px solid ${isMe?'var(--purple)':'var(--border)'};flex-shrink:0">${avatar}</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:700;color:${isMe?'var(--purple)':'var(--text)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.name||'Игрок'}${isMe?' 👈':''}</div>
-          <div style="font-size:10px;color:var(--text2);margin-top:1px">Ур.${level} · ${u.total_ideas||0} идей · ${u.done_count||0} выполнено</div>
-        </div>
-        <div style="text-align:right;flex-shrink:0">
-          <div style="font-size:16px;font-weight:800;color:var(--purple)">${u.xp||0}</div>
-          <div style="font-size:9px;color:var(--text2);letter-spacing:1px">XP</div>
-        </div>
-      </div>`;
-    }).join('');
-  }catch(e){
-    document.getElementById('leaderboard-inline').innerHTML='<div style="text-align:center;color:var(--text2);font-size:13px;padding:16px">⚠️ Нет связи</div>';
-  }
-}
-
-async function renderLeaderboard(){
-  const el=document.getElementById('leaderboard-content');
-  el.innerHTML='<div style="text-align:center;color:var(--text2);padding:30px">Загрузка...</div>';
-  try{
-    const r=await fetch(`${API}/api/leaderboard`);
-    const d=await r.json();
-    const board=d.leaderboard||[];
-    if(!board.length){el.innerHTML='<div style="text-align:center;color:var(--text2);padding:30px">Нет участников</div>';return;}
-    const medals=['🥇','🥈','🥉'];
-    el.innerHTML=board.map((u,i)=>{
-      const avatar=AVATARS[u.user_id%AVATARS.length];
-      const isMe=u.user_id==userId;
-      const medal=medals[i]||`${i+1}`;
-      const level=Math.floor((u.xp||0)/100)+1;
-      const levelName=LEVELS[Math.min(level-1,LEVELS.length-1)];
-      const prod=u.total_ideas?Math.round((u.done_count||0)/u.total_ideas*100):0;
-      return `<div style="background:var(--card);border:1.5px solid ${isMe?'var(--purple)':'var(--border)'};border-radius:16px;padding:14px;margin-bottom:8px;${isMe?'box-shadow:0 4px 20px rgba(127,119,221,0.2)':'box-shadow:0 2px 8px rgba(127,119,221,0.06)'}">
-        <div style="display:flex;align-items:center;gap:12px">
-          <div style="font-size:${i<3?'24px':'16px'};font-weight:800;width:32px;text-align:center;color:${isMe?'var(--purple)':'var(--text2)'}">${medal}</div>
-          <div style="width:40px;height:40px;border-radius:50%;background:${isMe?'var(--purple-light)':'var(--bg2)'};display:flex;align-items:center;justify-content:center;font-size:20px;border:2px solid ${isMe?'var(--purple)':'var(--border)'}">${avatar}</div>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:14px;font-weight:700;color:${isMe?'var(--purple)':'var(--text)'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${u.name||'Игрок'}${isMe?' (ты)':''}</div>
-            <div style="font-size:11px;color:var(--text2);margin-top:1px">Ур.${level} · ${levelName}</div>
-          </div>
-          <div style="text-align:right">
-            <div style="font-size:18px;font-weight:800;color:var(--purple)">${u.xp||0}</div>
-            <div style="font-size:9px;color:var(--text2);letter-spacing:1px">XP</div>
-          </div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
-          <div style="text-align:center">
-            <div style="font-size:15px;font-weight:700;color:var(--text)">${u.total_ideas||0}</div>
-            <div style="font-size:10px;color:var(--text2)">идей</div>
-          </div>
-          <div style="text-align:center">
-            <div style="font-size:15px;font-weight:700;color:var(--teal)">${u.done_count||0}</div>
-            <div style="font-size:10px;color:var(--text2)">выполнено</div>
-          </div>
-          <div style="text-align:center">
-            <div style="font-size:15px;font-weight:700;color:var(--amber)">${prod}%</div>
-            <div style="font-size:10px;color:var(--text2)">продукт.</div>
-          </div>
-        </div>
-      </div>`;
-    }).join('');
-  }catch(e){el.innerHTML='<div style="text-align:center;color:var(--text2);padding:30px">⚠️ Нет связи</div>';}
-}
-
-
-let currentEditId = null;
-let editFromScreen = 's-all';
-
-function openEdit(e, ideaId) {
-  e.stopPropagation();
-  const idea = allIdeas.find(i => i.id === ideaId);
-  if (!idea) return;
-  currentEditId = ideaId;
-  // Remember which screen we came from
-  const active = document.querySelector('.screen.active');
-  editFromScreen = active ? active.id : 's-all';
-  document.getElementById('edit-content').value = idea.content || '';
-  document.getElementById('edit-topic').value = idea.topic || 'Идея';
-  document.getElementById('edit-url').value = idea.url || '';
-  document.getElementById('edit-hours').value = idea.estimated_hours || '';
-  goTo('s-edit');
-}
-
-function cancelEdit() {
-  goTo(editFromScreen);
-}
-
-async function saveEdit() {
-  const content = document.getElementById('edit-content').value.trim();
-  const topic = document.getElementById('edit-topic').value;
-  const url = document.getElementById('edit-url').value.trim() || null;
-  const hours = parseFloat(document.getElementById('edit-hours').value) || null;
-  if (!content) { showToast('⚠️ Текст не может быть пустым'); return; }
-  try {
-    const r = await fetch(`${API}/api/ideas/update`, {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({idea_id: currentEditId, user_id: userId, content, topic, url, estimated_hours: hours})
-    });
-    const d = await r.json();
-    if (d.ok) {
-      const idea = allIdeas.find(i => i.id === currentEditId);
-      if (idea) { idea.content = content; idea.topic = topic; idea.url = url; idea.estimated_hours = hours; }
-      showToast('✅ Сохранено!');
-      if (tg) tg.HapticFeedback?.notificationOccurred('success');
-      await loadData();
-      goTo(editFromScreen);
-    }
-  } catch(e) { showToast('⚠️ Нет связи'); }
-}
-
-function showDeleteConfirm() {
-  document.getElementById('delete-confirm').style.display = 'flex';
-}
-
-function hideDeleteConfirm() {
-  document.getElementById('delete-confirm').style.display = 'none';
-}
-
-async function confirmDelete() {
-  hideDeleteConfirm();
-  try {
-    const r = await fetch(`${API}/api/ideas/delete`, {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({idea_id: currentEditId, user_id: userId})
-    });
-    const d = await r.json();
-    if (d.ok) {
-      allIdeas = allIdeas.filter(i => i.id !== currentEditId);
-      showToast('🗑 Идея удалена');
-      if (tg) tg.HapticFeedback?.impactOccurred('heavy');
-      renderHome();
-      goTo(editFromScreen);
-    }
-  } catch(e) { showToast('⚠️ Нет связи'); }
+  }catch(e){showToast('⚠️ Нет связи');}
 }
 
 loadData();
